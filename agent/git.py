@@ -28,6 +28,8 @@ class GitManager:
         self.workspace_dir = Path(repo_config.get("workspace_dir", f"/workspace/{self.name}"))
         self.test_command = repo_config.get("test_command")
         self.install_command = repo_config.get("install_command")
+        self.git_user_name = repo_config.get("git_user_name", "Checklist Garden Agent")
+        self.git_user_email = repo_config.get("git_user_email", "agent@checklist.garden")
 
     def _run(self, cmd: list[str], cwd: Path | None = None, timeout: int = 120) -> subprocess.CompletedProcess:
         """Run a shell command and return the result."""
@@ -72,8 +74,8 @@ class GitManager:
             return False
 
         # Configure git user for commits
-        self._run(["git", "config", "user.name", "Autonomous Agent"])
-        self._run(["git", "config", "user.email", "agent@localhost"])
+        self._run(["git", "config", "user.name", self.git_user_name])
+        self._run(["git", "config", "user.email", self.git_user_email])
         return True
 
     def pull_latest(self) -> bool:

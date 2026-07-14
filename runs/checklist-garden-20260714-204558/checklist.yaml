@@ -44,7 +44,9 @@ tasks:
     button, link to login.'
   id: 4
   repo: checklist-garden
-  status: in_progress
+  status: failed
+  branch: agent/overnight-2026-07-14
+  log_file: logs/task_4.log
 - context_files:
   - agent/git.py
   - config.yaml
@@ -54,7 +56,7 @@ tasks:
     Use them in ensure_cloned for git config.
   id: 5
   repo: checklist-garden
-  status: pending
+  status: in_progress
 - context_files:
   - README.md
   description: Create Caddyfile with reverse_proxy localhost:8000 and checklist-garden.service
