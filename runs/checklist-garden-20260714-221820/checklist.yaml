@@ -20,7 +20,9 @@ tasks:
     the Settings link. Hamburger menu shows same two links.'
   id: 2
   repo: checklist-garden
-  status: in_progress
+  status: done
+  branch: agent/overnight-2026-07-14-221823
+  log_file: logs/task_2.log
 - context_files:
   - web/templates/command_center.html
   description: 'Simplify web/templates/command_center.html to a clean single-page
@@ -30,7 +32,9 @@ tasks:
     names.'
   id: 3
   repo: checklist-garden
-  status: pending
+  status: failed
+  branch: agent/overnight-2026-07-14-221823
+  log_file: logs/task_3.log
 - context_files:
   - web/templates/login.html
   - web/templates/register.html
@@ -39,7 +43,7 @@ tasks:
     matching light theme. Keep same form fields and Jinja2 variables.
   id: 4
   repo: checklist-garden
-  status: pending
+  status: in_progress
 - context_files:
   - agent/git.py
   - config.yaml
