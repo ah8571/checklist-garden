@@ -10,7 +10,9 @@ tasks:
     blocks unchanged. Only modify the style block and nav title HTML.'
   id: 1
   repo: checklist-garden
-  status: in_progress
+  status: done
+  branch: agent/overnight-2026-07-14-221823
+  log_file: logs/task_1.log
 - context_files:
   - web/templates/base.html
   description: 'Simplify the nav in web/templates/base.html to just two links: Runs
@@ -18,7 +20,7 @@ tasks:
     the Settings link. Hamburger menu shows same two links.'
   id: 2
   repo: checklist-garden
-  status: pending
+  status: in_progress
 - context_files:
   - web/templates/command_center.html
   description: 'Simplify web/templates/command_center.html to a clean single-page
