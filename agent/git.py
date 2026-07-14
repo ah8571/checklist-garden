@@ -118,11 +118,10 @@ class GitManager:
         return False
 
     def push_branch(self, branch_name: str) -> bool:
-        """Push the branch to origin."""
+        """Push the branch to origin (force-push to handle divergent branches)."""
         logger.info(f"[{self.name}] Pushing {branch_name}")
-        # Re-inject PAT for push URL
         auth_url = self._inject_pat(self.url)
-        result = self._run(["git", "push", auth_url, branch_name])
+        result = self._run(["git", "push", "--force", auth_url, branch_name])
         if result.returncode == 0:
             logger.info(f"[{self.name}] Pushed {branch_name}")
             return True

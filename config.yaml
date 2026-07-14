@@ -12,7 +12,7 @@ models:
     model: claude-sonnet-4-20250514
     temperature: 0.2
   deepseek:
-    max_tokens: 4096
+    max_tokens: 8192
     model: deepseek-chat
     temperature: 0.2
   openai:

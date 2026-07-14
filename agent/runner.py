@@ -342,7 +342,7 @@ def run(args):
             sys.exit(1)
         # Pull latest and create a single branch for this repo's run
         git.pull_latest()
-        branch_name = f"{git.branch_prefix}overnight-{run_date}"
+        branch_name = f"{git.branch_prefix}overnight-{run_date}-{datetime.now().strftime('%H%M%S')}"
         git.ensure_run_branch(branch_name)
         repo_branches[repo_name] = branch_name
         logger.info(f"Repo '{repo_name}' → branch '{branch_name}'")
