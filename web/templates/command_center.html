@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}Command Center — Red-Eye Agent{% endblock %}
+{% block title %}Command Center — Checklist Garden{% endblock %}
 
 {% block content %}
 <style>
     .cc-card {
-        background-color: #16213e;
+        background-color: #ffffff;
         border-radius: 8px;
         margin-bottom: 1.5rem;
-        border: 1px solid #0f3460;
+        border: 1px solid #e2e8f0;
         overflow: hidden;
     }
     .cc-header {
@@ -24,6 +24,7 @@
     .cc-header h2 {
         margin: 0;
         font-size: 1.2rem;
+        color: #1a202c;
     }
     .cc-chevron {
         transition: transform 0.2s ease;
@@ -37,7 +38,7 @@
     }
 </style>
 
-<h1>Command Center</h1>
+<h1 style="color: #1a202c;">Command Center</h1>
 
 <!-- ── Launch New Run (open by default) ── -->
 <details class="cc-card" open>
