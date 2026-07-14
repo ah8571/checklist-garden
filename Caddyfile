@@ -1,0 +1,3 @@
+checklist-garden.example.com {
+    reverse_proxy localhost:8000
+}
