@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Run Log — Red-Eye Agent{% endblock %}
+{% block title %}Run Log — Checklist Garden{% endblock %}
 {% block content %}
 <div class="card">
     <h2>{{ filename }}</h2>
-    <pre style="background-color: #0f3460; color: #eee; padding: 1rem; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; margin-top: 1rem;">{{ log_content }}</pre>
+    <pre style="background-color: #0f3460; color: #eee; padding: 1rem; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; margin-top: 1rem;">{{ content }}</pre>
 </div>
 {% endblock %}
