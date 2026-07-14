@@ -1,0 +1,11 @@
+{
+  "checklist-garden-20260714-204558": {
+    "pid": 13886,
+    "repo": "checklist-garden",
+    "started_at": "2026-07-14T20:45:58.636995+00:00",
+    "status": "running",
+    "log_file": "runs/checklist-garden-20260714-204558/output.log",
+    "checklist_file": "runs/checklist-garden-20260714-204558/checklist.yaml",
+    "config_path": "config.yaml"
+  }
+}

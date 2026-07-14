@@ -14,8 +14,8 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background-color: #1a1a2e;
-            color: #eee;
+            background-color: #f8f9fa;
+            color: #1a202c;
             line-height: 1.6;
             min-height: 100vh;
         }
@@ -25,9 +25,9 @@
             padding: 0 20px;
         }
         nav {
-            background-color: #16213e;
+            background-color: #ffffff;
             padding: 1rem 0;
-            border-bottom: 2px solid #e94560;
+            border-bottom: 1px solid #e2e8f0;
         }
         .nav-container {
             display: flex;
@@ -40,11 +40,11 @@
             gap: 0.6rem;
             font-size: 1.5rem;
             font-weight: bold;
-            color: #eee;
+            color: #1a202c;
             text-decoration: none;
         }
         .nav-title:hover {
-            color: #eee;
+            color: #3182ce;
         }
         .nav-links {
             display: flex;
@@ -52,48 +52,53 @@
             align-items: center;
         }
         .nav-links a {
-            color: #eee;
+            color: #1a202c;
             text-decoration: none;
             transition: color 0.2s;
         }
         .nav-links a:hover {
-            color: #e94560;
+            color: #3182ce;
         }
         main {
             padding: 2rem 0;
         }
         .card {
-            background-color: #16213e;
+            background-color: #ffffff;
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            border: 1px solid #0f3460;
+            border: 1px solid #e2e8f0;
         }
         code, pre {
             font-family: 'Courier New', Courier, monospace;
-            background-color: #0f3460;
+            background-color: #edf2f7;
             padding: 0.2rem 0.4rem;
             border-radius: 4px;
             font-size: 0.9em;
+            color: #2d3748;
         }
         pre {
             padding: 1rem;
             overflow-x: auto;
         }
         a {
-            color: #eee;
+            color: #3182ce;
             text-decoration: none;
         }
         a:hover {
+            color: #2b6cb0;
+        }
+        .error {
             color: #e94560;
         }
         footer {
             text-align: center;
             padding: 1.5rem 0;
-            color: #888;
+            color: #a0aec0;
             font-size: 0.9rem;
-            border-top: 1px solid #0f3460;
+            border-top: 1px solid #e2e8f0;
             margin-top: 2rem;
+            background-color: #f8f9fa;
         }
         .hamburger {
             display: none;
@@ -108,12 +113,12 @@
             display: block;
             width: 24px;
             height: 2px;
-            background-color: #eee;
+            background-color: #1a202c;
             border-radius: 2px;
             transition: background-color 0.2s;
         }
         .hamburger:hover span {
-            background-color: #e94560;
+            background-color: #3182ce;
         }
         @media (max-width: 768px) {
             .hamburger {
@@ -126,8 +131,8 @@
                 position: absolute;
                 top: 100%;
                 right: 0;
-                background-color: #16213e;
-                border: 1px solid #0f3460;
+                background-color: #ffffff;
+                border: 1px solid #e2e8f0;
                 border-top: none;
                 min-width: 160px;
                 z-index: 100;
@@ -137,7 +142,8 @@
             }
             .nav-links a {
                 padding: 0.75rem 1.25rem;
-                border-bottom: 1px solid #0f3460;
+                border-bottom: 1px solid #e2e8f0;
+                color: #1a202c;
             }
             .nav-links a:last-child {
                 border-bottom: none;
@@ -153,13 +159,6 @@
         <div class="container nav-container">
             <a href="/" class="nav-title">
                 Red-Eye Agent
-                <!-- Single red eye -->
-                <svg width="32" height="24" viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="margin-left:0.5rem;">
-                    <path d="M3,30 C18,5 82,5 97,30 C82,55 18,55 3,30 Z"
-                          fill="none" stroke="#e94560" stroke-width="5" stroke-linejoin="round"/>
-                    <circle cx="50" cy="30" r="17" fill="none" stroke="#e94560" stroke-width="5"/>
-                    <circle cx="50" cy="30" r="9" fill="#e94560"/>
-                </svg>
             </a>
             <button class="hamburger" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
                 <span></span><span></span><span></span>
