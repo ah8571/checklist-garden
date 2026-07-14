@@ -218,14 +218,13 @@ class TaskExecutor:
     def _parse_response(self, response_text: str, original_context: str) -> dict:
         """
         Parse JSON response from LLM, handling markdown code fences.
-        If the response is not valid JSON, send one follow-up message asking for valid JSON.
-        Only retry once.
+        If the response is truncated (unterminated JSON), ask the LLM to continue
+        up to 3 times, stitching pieces together.
         """
         text = response_text.strip()
 
         # Strip markdown code fences if present
         if text.startswith("```"):
-            # Remove first line (```json) and last line (```)
             lines = text.split("\n")
             if lines[0].startswith("```"):
                 lines = lines[1:]
@@ -236,10 +235,66 @@ class TaskExecutor:
         try:
             return json.loads(text)
         except json.JSONDecodeError as e:
+            err_str = str(e)
+            # If it looks like truncation (unterminated string or cut-off JSON),
+            # try auto-continuation before full retry
+            if "Unterminated string" in err_str or "Expecting" in err_str:
+                try:
+                    return self._continue_truncated(original_context, response_text, text)
+                except ValueError:
+                    pass  # Fall through to full retry
+
             logger.warning(f"LLM response was not valid JSON, attempting retry: {e}")
             logger.debug(f"Raw response:\n{response_text[:500]}")
-            # Retry once
             return self._retry_parse(original_context, response_text)
+
+    def _continue_truncated(
+        self, original_context: str, raw_response: str, partial_json: str, max_continues: int = 3
+    ) -> dict:
+        """Ask the LLM to continue a truncated JSON response, up to max_continues times."""
+        for attempt in range(max_continues):
+            logger.info(
+                f"LLM response truncated, requesting continuation "
+                f"(attempt {attempt + 1}/{max_continues})"
+            )
+            continue_prompt = (
+                "Your previous JSON response was cut off due to output length limits. "
+                "Continue EXACTLY where you left off — output ONLY the remaining portion "
+                "of the JSON starting from the exact character where your last response ended. "
+                "Do not repeat anything, do not add markdown fences, just the raw continuation text."
+            )
+            messages = [
+                {"role": "user", "content": original_context},
+                {"role": "assistant", "content": raw_response},
+                {"role": "user", "content": continue_prompt},
+            ]
+            continuation = self.llm.chat(messages, system_prompt=SYSTEM_PROMPT)
+            continuation_text = continuation.strip()
+
+            # Strip any markdown fences from continuation
+            if continuation_text.startswith("```"):
+                lines = continuation_text.split("\n")
+                if lines[0].startswith("```"):
+                    lines = lines[1:]
+                if lines and lines[-1].strip() == "```":
+                    lines = lines[:-1]
+                continuation_text = "\n".join(lines)
+
+            # Stitch together
+            raw_response += continuation
+            partial_json += continuation_text
+
+            try:
+                result = json.loads(partial_json)
+                logger.info("LLM continuation succeeded — JSON now valid")
+                return result
+            except json.JSONDecodeError as e:
+                if "Unterminated string" not in str(e) and "Expecting" not in str(e):
+                    # Non-truncation error — give up on continuation
+                    raise ValueError(f"Continuation produced invalid JSON: {e}")
+                # Still truncated, try again
+
+        raise ValueError(f"LLM response still incomplete after {max_continues} continuation attempts")
 
     def _retry_parse(self, original_context: str, previous_response: str) -> dict:
         """Send follow-up message asking for valid JSON and parse again."""
@@ -258,7 +313,6 @@ class TaskExecutor:
         ]
         response_text = self.llm.chat(messages, system_prompt=SYSTEM_PROMPT)
         text = response_text.strip()
-        # Strip markdown code fences if present
         if text.startswith("```"):
             lines = text.split("\n")
             if lines[0].startswith("```"):
