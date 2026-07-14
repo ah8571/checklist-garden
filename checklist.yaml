@@ -1,210 +1,154 @@
-# ─────────────────────────────────────────────────────────────
-# Task Checklist — Run 7: SQLite Migration
-# ─────────────────────────────────────────────────────────────
+# =============================================================
+# Task Checklist — Run: UI Minimalist Makeover
+# =============================================================
 # Status values: pending | in_progress | done | failed | timeout | budget_exceeded
 
 tasks:
-  # ── Create SQLite database layer ──────────────────────────
+  # ── Light theme CSS rewrite ──────────────────────────────
 
   - id: 1
-    repo: "red-eye-agent"
+    repo: "checklist-garden"
     description: >
-      Create a new file web/database.py using only Python's built-in
-      sqlite3 module (no external packages). The database file path
-      should default to Path(__file__).parent / "agent.db" but be
-      overridable via a DB_PATH environment variable (str only, no
-      default other than the computed path). Define these functions:
+      Rewrite all CSS in web/templates/base.html to a clean, minimalist
+      light theme. Replace the dark navy (#1a1a2e / #16213e / #0f3460)
+      color scheme with:
 
-      get_db_path() -> Path: returns the resolved DB path.
+      - Body background: #f8f9fa (light grey)
+      - Card/container backgrounds: #ffffff (white)
+      - Card borders: #e2e8f0 (subtle grey border)
+      - Text color: #1a202c (dark grey, not pure black)
+      - Nav background: #ffffff with a subtle bottom border (#e2e8f0)
+      - Links and accent color: #3182ce (blue, not red)
+      - Keep #e94560 (red) only for error messages and danger buttons
+      - Code/pre blocks: #edf2f7 background, #2d3748 text
+      - Footer: #f8f9fa background, #a0aec0 text
 
-      init_db() -> None: creates the database file and both tables if
-      they do not already exist. Users table: email TEXT PRIMARY KEY,
-      password_hash TEXT NOT NULL, created_at TEXT NOT NULL. Runs
-      table: run_id TEXT PRIMARY KEY, pid INTEGER, repo TEXT,
-      started_at TEXT, status TEXT NOT NULL DEFAULT 'running',
-      log_file TEXT, checklist_file TEXT, config_path TEXT. Use
-      "CREATE TABLE IF NOT EXISTS" for both. Call commit() after.
+      Remove the red eye SVG icon from the nav logo. Replace the nav
+      title "Checklist Garden" with just plain text, no SVG icon next
+      to it. Keep the hamburger menu responsive behavior intact.
 
-      get_user(email: str) -> dict | None: SELECT row from users by
-      email, return as dict {"email": ..., "password_hash": ...} or
-      None if not found.
-
-      create_user(email: str, password_hash: str) -> bool: INSERT into
-      users. Return True on success, False if email already exists
-      (catch sqlite3.IntegrityError).
-
-      save_run(run_id: str, pid: int, repo: str, started_at: str,
-      log_file: str, checklist_file: str, config_path: str) -> None:
-      INSERT OR REPLACE into runs with status='running'.
-
-      get_run(run_id: str) -> dict | None: SELECT row from runs by
-      run_id, return as dict with all columns or None.
-
-      update_run_status(run_id: str, status: str) -> None: UPDATE runs
-      SET status=? WHERE run_id=?.
-
-      list_runs() -> list[dict]: SELECT all rows from runs ORDER BY
-      started_at DESC, return as list of dicts.
-
-      Use context managers (with sqlite3.connect(...) as conn:) for
-      every operation so connections are closed promptly. Use
-      conn.row_factory = sqlite3.Row to allow dict-like access.
+      Keep all existing HTML structure and Jinja2 blocks unchanged —
+      only modify the <style> block. Do not touch any other templates.
     status: pending
     context_files:
-      - "web/auth.py"
-      - "process_manager.py"
+      - "web/templates/base.html"
 
-  # ── Migrate web/auth.py to SQLite ─────────────────────────
+  # ── Navbar simplification ────────────────────────────────
 
   - id: 2
-    repo: "red-eye-agent"
+    repo: "checklist-garden"
     description: >
-      Rewrite web/auth.py to use web/database.py instead of reading
-      and writing web/users.json. Keep all the same public function
-      signatures so nothing else in the codebase breaks.
+      Simplify the navigation bar in web/templates/base.html.
+      The current nav has links for "Command Center" and "Settings"
+      plus Logout. Change it to:
 
-      init_users_db() -> None: call database.init_db() and return.
-      Remove the old JSON file creation logic entirely.
+      - "Runs" linking to /command-center (keep same URL for now)
+      - "Logout" (only shown when user is logged in)
+      - Remove "Settings" link entirely
 
-      get_users_db_path() -> Path: keep this function but have it
-      return database.get_db_path() so any callers don't break.
-
-      register_user(email, password) -> bool: call database.get_user(email)
-      to check for duplicates (return False if found or if email not
-      in ALLOWED_EMAILS). Hash the password with bcrypt as before.
-      Call database.create_user(email, hashed_password) and return
-      the result.
-
-      verify_user(email, password) -> bool: call database.get_user(email).
-      If None return False. Otherwise bcrypt.checkpw as before.
-
-      create_session_token and verify_session_token: leave these
-      completely unchanged — they don't touch the database.
-
-      Remove all imports of json. Add import of web.database as
-      database (use a relative import: from web import database).
-      Do NOT modify web/users.json or delete it — leave it as-is for
-      the migration script to read.
+      The nav should be clean: brand name on the left, two links on
+      the right. No dropdowns, no icons. Keep the hamburger menu for
+      mobile but it should show the same two links.
     status: pending
     context_files:
-      - "web/auth.py"
-      - "web/database.py"
+      - "web/templates/base.html"
 
-  # ── Migrate process_manager.py to SQLite ──────────────────
+  # ── Clean up command center page ─────────────────────────
 
   - id: 3
-    repo: "red-eye-agent"
+    repo: "checklist-garden"
     description: >
-      Rewrite the RunManager class in process_manager.py to use
-      web/database.py instead of runs/registry.json. Keep the same
-      public API (start_run, get_status, stop_run, list_runs) and all
-      existing logic for spawning subprocesses, PID checks, and
-      SIGTERM — only replace the JSON persistence layer.
+      Simplify web/templates/command_center.html. The current page has
+      many sections and cards. Streamline it to focus on the core
+      workflow:
 
-      In __init__: remove self.registry_file and self.registry.
-      Call database.init_db() to ensure the DB exists. Remove
-      _load_registry and _save_registry methods entirely.
+      1. Top section: a large textarea for pasting tasks, with a repo
+         selector dropdown and format selector (quick/markdown/yaml).
+         Label it "What should the agent work on?"
 
-      start_run: after spawning the subprocess, call
-      database.save_run(run_id, proc.pid, repo_name, started_at_iso,
-      str(log_file), str(dest_checklist), config_path) instead of
-      writing to self.registry. Return the same entry dict as before
-      (build it locally, do not store it on self).
+      2. A prominent "Start Run" button below the textarea.
 
-      get_status: call database.get_run(run_id) to fetch the entry.
-      Raise KeyError if None. Perform the same PID liveness check.
-      If process is dead and status is 'running', call
-      database.update_run_status(run_id, 'finished'). Load checklist
-      file from the path in the DB row. Return the same dict shape.
+      3. Below that, a simple table of active/recent runs showing:
+         run_id, repo, status, started_at. Each row links to its logs.
 
-      stop_run: call database.get_run(run_id) to get pid and entry.
-      Send SIGTERM as before. Call database.update_run_status on
-      success. Return bool as before.
+      4. Remove: the connected repos list, the checklist preview panel,
+         the raw YAML editor, the upload file button, and any other
+         sections not directly needed for "paste, run, check."
 
-      list_runs: call database.list_runs() to get all rows. For each,
-      call self.get_status(run_id) to get the full status dict with
-      task counts. Return sorted list (already sorted DESC by DB).
-
-      Add "from web import database" at the top of the file.
+      Keep the same Jinja2 template variable names used by the backend
+      (user_email, repos, all_repos, active_runs, log_files, tasks,
+      checklist_raw, checklist_error) so the backend doesn't break.
+      Some may become unused — that's fine, just don't reference them
+      in the simplified template.
     status: pending
     context_files:
-      - "process_manager.py"
-      - "web/database.py"
+      - "web/templates/command_center.html"
+      - "web/app.py"
 
-  # ── One-time migration script ─────────────────────────────
+  # ── Simplify login and register pages ────────────────────
 
   - id: 4
-    repo: "red-eye-agent"
+    repo: "checklist-garden"
     description: >
-      Create a new file scripts/migrate_to_sqlite.py that imports
-      existing flat JSON data into the SQLite database. Create the
-      scripts/ directory if it doesn't exist (use Path.mkdir).
+      Rewrite web/templates/login.html and web/templates/register.html
+      with a clean, centered card layout matching the new light theme.
 
-      The script should:
-      1. Call database.init_db() to ensure tables exist.
-      2. Read web/users.json if it exists. For each email -> record
-         pair, call database.create_user(email, record["password_hash"]).
-         Print "Migrated user: {email}" or "User already exists: {email}"
-         based on return value.
-      3. Read runs/registry.json if it exists. For each run_id ->
-         entry pair, call database.save_run with the fields from the
-         entry dict (use entry.get("pid", 0), entry.get("repo", ""),
-         entry.get("started_at", ""), entry.get("log_file", ""),
-         entry.get("checklist_file", ""), entry.get("config_path", "")).
-         Then if entry.get("status") != "running", call
-         database.update_run_status(run_id, entry["status"]).
-         Print "Migrated run: {run_id}".
-      4. Print a final summary: "Migration complete. X users, Y runs."
+      Both pages should:
+      - Have a centered white card (max-width 400px) on the light grey
+        background
+      - Use the blue accent (#3182ce) for buttons
+      - Remove any dark-themed styling remnants
+      - Keep the same form fields, error display, and Jinja2 variables
+        exactly as they are so the backend works unchanged
 
-      The script must be runnable with:
-        python scripts/migrate_to_sqlite.py
-      from the project root. Add sys.path manipulation at the top
-      (sys.path.insert(0, str(Path(__file__).parent.parent))) so the
-      web package is importable. Import database as: from web import database.
-      Do not import anything that requires external packages other than
-      what is already installed (yaml, bcrypt are fine; sqlite3 is built-in).
+      For login.html: email input, password input, "Login" button,
+      link to /register.
+
+      For register.html: email input, password input, "Register" button,
+      link to /login.
     status: pending
     context_files:
-      - "web/database.py"
-      - "web/auth.py"
-      - "process_manager.py"
+      - "web/templates/login.html"
+      - "web/templates/register.html"
+      - "web/templates/base.html"
 
-  # ── Tests for database.py ─────────────────────────────────
+  # ── Add Caddyfile and systemd unit to repo ───────────────
 
   - id: 5
-    repo: "red-eye-agent"
+    repo: "checklist-garden"
     description: >
-      Create tests/test_database.py with unit tests for web/database.py.
-      Use Python's built-in unittest and tempfile modules only —
-      no pytest-specific features. All tests must use a temporary
-      database file (tempfile.mkstemp(suffix=".db")) so they don't
-      touch the real agent.db. Patch database.get_db_path to return
-      the temp path using unittest.mock.patch.
+      Create two new files at the repo root for operational
+      documentation so the deployment setup is reproducible:
 
-      Write tests as a unittest.TestCase class with setUp/tearDown.
-      In setUp: create temp db file, patch get_db_path, call init_db().
-      In tearDown: remove the temp file.
+      1. Create Caddyfile at repo root:
+      ```
+      checklist.garden {
+          reverse_proxy localhost:8000
+      }
+      ```
 
-      Test cases to include:
-      - test_init_db_creates_tables: after init_db(), connect directly
-        and verify both "users" and "runs" tables exist in sqlite_master.
-      - test_create_and_get_user: create_user returns True, get_user
-        returns dict with correct email and password_hash.
-      - test_create_user_duplicate: second create_user with same email
-        returns False.
-      - test_get_user_not_found: get_user for unknown email returns None.
-      - test_save_and_get_run: save_run then get_run returns dict with
-        matching run_id, pid, repo, status='running'.
-      - test_update_run_status: save_run, update_run_status to 'finished',
-        get_run returns status='finished'.
-      - test_list_runs_order: save two runs with different started_at,
-        list_runs returns them newest first.
-      - test_list_runs_empty: list_runs on fresh db returns empty list.
+      2. Create checklist-garden.service at repo root:
+      ```
+      [Unit]
+      Description=Checklist Garden
+      After=network.target
 
-      Ensure the new tests can be run alongside the existing
-      tests/test_checklist_parser.py without conflict. All 8 new
-      tests plus the existing 18 must pass with: python -m pytest tests/
+      [Service]
+      Type=simple
+      User=root
+      WorkingDirectory=/workspace/checklist-garden
+      ExecStart=/root/agent/.venv/bin/uvicorn web.app:app --host 127.0.0.1 --port 8000
+      Restart=always
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+      ```
+
+      Also add a short "Deployment" section to README.md explaining
+      how to use these two files on a fresh VPS (copy Caddyfile to
+      /etc/caddy/, copy .service to /etc/systemd/system/, then
+      systemctl daemon-reload and enable both).
     status: pending
     context_files:
-      - "web/database.py"
-      - "tests/test_checklist_parser.py"
+      - "README.md"

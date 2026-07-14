@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────
-# Red-Eye Agent — Main Configuration
+# Checklist Garden — Main Configuration
 # ─────────────────────────────────────────────────────────────
 
 # Default LLM provider: "deepseek", "openai", or "anthropic"
@@ -33,13 +33,13 @@ timeouts:
 
 # Repos to work on — each gets its own workspace
 repos:
-  - name: "red-eye-agent"
-    url: "https://github.com/ah8571/red-eye-agent.git"
+  - name: "checklist-garden"
+    url: "https://github.com/ah8571/checklist-garden.git"
     branch_prefix: "agent/"        # Branch created as agent/overnight-<date>
     default_branch: "main"
-    test_command: "python -m unittest discover tests"  # Updated from null
-    install_command: "pip install -r requirements.txt"
-    workspace_dir: "/workspace/red-eye-agent"
+    test_command: "/root/agent/.venv/bin/python -m unittest discover tests"
+    install_command: "/root/agent/.venv/bin/pip install -r requirements.txt"
+    workspace_dir: "/workspace/checklist-garden"
 
   # Add more repos:
   # - name: "backend-api"
