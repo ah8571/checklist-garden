@@ -54,14 +54,16 @@ tasks:
     keys with defaults. Use them in ensure_cloned for git config.
   id: 5
   repo: checklist-garden
-  status: in_progress
+  status: done
+  branch: agent/overnight-2026-07-14-221823
+  log_file: logs/task_5.log
 - context_files:
   - README.md
   description: Create Caddyfile with reverse_proxy localhost:8000 and checklist-garden.service
     systemd unit at repo root. Add Deployment section to README.md.
   id: 6
   repo: checklist-garden
-  status: pending
+  status: in_progress
 - context_files:
   - web/github_repos.py
   - web/app.py

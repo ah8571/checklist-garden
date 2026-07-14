@@ -10,6 +10,52 @@ Red-Eye Agent — autonomous overnight coding agent powered by DeepSeek/OpenAI/A
 - **Auto-retry on test failure**: Automatically retries failed LLM calls (configurable up to `max_retries_per_task`).
 - **Per-task logging**: Each task gets its own log file for detailed debugging.
 
+## Deployment
+
+### Prerequisites
+- A server with Python 3.10+ and Caddy installed.
+- Domain name pointed to your server (e.g., `checklist-garden.example.com`).
+
+### Steps
+
+1. **Clone the repository** on your server:
+   ```bash
+   git clone https://github.com/ah8571/red-eye-agent.git /opt/checklist-garden
+   cd /opt/checklist-garden
+   ```
+
+2. **Set up environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+3. **Install Python dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure Caddy**:
+   Copy the provided `Caddyfile` to `/etc/caddy/Caddyfile` (or use `caddy reload` if Caddy is already running):
+   ```bash
+   sudo cp Caddyfile /etc/caddy/Caddyfile
+   sudo systemctl reload caddy
+   ```
+
+5. **Install the systemd service**:
+   ```bash
+   sudo cp checklist-garden.service /etc/systemd/system/
+   sudo systemctl daemon-reload
+   sudo systemctl enable checklist-garden
+   sudo systemctl start checklist-garden
+   ```
+
+6. **Verify**:
+   ```bash
+   sudo systemctl status checklist-garden
+   # Visit https://checklist-garden.example.com in your browser
+   ```
+
 ## Quick Start
 
 1. **Clone the repository**

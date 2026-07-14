@@ -6,6 +6,20 @@ After=network.target
 Type=simple
 User=www-data
 WorkingDirectory=/opt/checklist-garden
+ExecStart=/usr/bin/python3 /opt/checklist-garden/web/app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+[Unit]
+Description=Checklist Garden Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/checklist-garden
 EnvironmentFile=/opt/checklist-garden/.env
 ExecStart=/usr/bin/python3 /opt/checklist-garden/web/app.py
 Restart=on-failure
