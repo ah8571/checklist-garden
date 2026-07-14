@@ -23,13 +23,13 @@ class TestValidateChecklist(unittest.TestCase):
             "tasks": [
                 {
                     "id": 1,
-                    "repo": "red-eye-agent",
+                    "repo": "checklist-garden",
                     "description": "Add test suite",
                     "status": "pending"
                 },
                 {
                     "id": 2,
-                    "repo": "red-eye-agent",
+                    "repo": "checklist-garden",
                     "description": "Fix bug in validation",
                     "status": "done"
                 }
@@ -38,7 +38,7 @@ class TestValidateChecklist(unittest.TestCase):
         
         # Should not raise SystemExit
         try:
-            with patch('agent_runner.logger') as mock_logger:
+            with patch('agent.runner.logger') as mock_logger:
                 validate_checklist(checklist, "test_checklist.yaml")
                 # Check that info was logged
                 mock_logger.info.assert_called_with(
@@ -53,7 +53,7 @@ class TestValidateChecklist(unittest.TestCase):
             "tasks": [
                 {
                     "id": 1,
-                    "repo": "red-eye-agent",
+                    "repo": "checklist-garden",
                     "description": "Add test suite",
                     # Missing 'status' field
                 }
@@ -62,7 +62,7 @@ class TestValidateChecklist(unittest.TestCase):
         
         # Should raise SystemExit
         with self.assertRaises(SystemExit) as cm:
-            with patch('agent_runner.logger') as mock_logger:
+            with patch('agent.runner.logger') as mock_logger:
                 validate_checklist(checklist, "test_checklist.yaml")
         
         # Check exit code is 1
@@ -105,13 +105,13 @@ class TestValidateConfig(unittest.TestCase):
             },
             "repos": [
                 {
-                    "name": "red-eye-agent",
-                    "url": "https://github.com/ah8571/red-eye-agent.git",
+                    "name": "checklist-garden",
+                    "url": "https://github.com/ah8571/checklist-garden.git",
                     "branch_prefix": "agent/",
                     "default_branch": "main",
                     "test_command": "python -m unittest discover tests",
                     "install_command": "pip install -r requirements.txt",
-                    "workspace_dir": "/workspace/red-eye-agent"
+                    "workspace_dir": "/workspace/checklist-garden"
                 }
             ]
         }
@@ -137,8 +137,8 @@ class TestValidateConfig(unittest.TestCase):
             },
             "repos": [
                 {
-                    "name": "red-eye-agent",
-                    "url": "https://github.com/ah8571/red-eye-agent.git"
+                    "name": "checklist-garden",
+                    "url": "https://github.com/ah8571/checklist-garden.git"
                 }
             ]
         }
