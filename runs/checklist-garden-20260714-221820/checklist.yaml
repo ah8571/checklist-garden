@@ -63,7 +63,9 @@ tasks:
     systemd unit at repo root. Add Deployment section to README.md.
   id: 6
   repo: checklist-garden
-  status: in_progress
+  status: done
+  branch: agent/overnight-2026-07-14-221823
+  log_file: logs/task_6.log
 - context_files:
   - web/github_repos.py
   - web/app.py
@@ -77,4 +79,4 @@ tasks:
     on first use.
   id: 7
   repo: checklist-garden
-  status: pending
+  status: in_progress

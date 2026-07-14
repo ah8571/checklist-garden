@@ -283,7 +283,7 @@ async def command_center(
         "command_center.html",
         {
             "user_email": user_email,
-            "repos": connected_repo_names,
+            "repos": all_repo_names,
             "all_repos": all_repo_names,
             "active_runs": active_runs,
             "log_files": log_files,

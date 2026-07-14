@@ -109,16 +109,16 @@
     </div>
 </details>
 
-<!-- ── Connect Repositories (collapsed) ── -->
+<!-- ── Upload Checklist (collapsed) ── -->
 <details class="cc-card">
     <summary class="cc-header">
-        <h2>Connect Repositories</h2>
+        <h2>Upload Checklist</h2>
         <svg class="cc-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M5 7.5L10 12.5L15 7.5" stroke="#eee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </summary>
     <div class="cc-body">
-    <p style="color: #eee; margin-bottom: 1.5rem; font-size: 0.9rem;">Choose any repository from your GitHub account. Uploading a checklist file here will connect it to your workspace and make it available in Launch New Run.</p>
+    <p style="color: #eee; margin-bottom: 1.5rem; font-size: 0.9rem;">Upload a checklist file (.md, .yaml, .yml) to start a run on any repository from your GitHub account.</p>
     <div style="border: 2px dashed #0f3460; border-radius: 8px; padding: 2rem; text-align: center; margin-bottom: 1.5rem;">
         <input type="file" id="fileUpload" accept=".md,.yaml,.yml" style="display: none;">
         <div style="margin-bottom: 1rem;">
@@ -130,10 +130,10 @@
             </select>
         </div>
         <button onclick="document.getElementById('fileUpload').click()" style="background-color: #0f3460; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 1rem;">Choose File</button>
-        <div id="fileName" style="margin-bottom: 1rem; color: #eee;">No file selected — or just pick a repo above and click Connect</div>
-        <button id="uploadButton" onclick="connectOrUpload()"
+        <div id="fileName" style="margin-bottom: 1rem; color: #eee;">No file selected</div>
+        <button id="uploadButton" onclick="uploadChecklist()"
                 style="background-color: #e94560; color: white; border: none; padding: 0.75rem 1.5rem;
-                       border-radius: 4px; cursor: pointer; font-weight: bold;">Connect Repository</button>
+                       border-radius: 4px; cursor: pointer; font-weight: bold;">Upload & Start Run</button>
         <div id="uploadError" style="display: none; margin-top: 1rem; padding: 1rem; background-color: #7f1d1d; color: #fca5a5; border-radius: 4px; border: 1px solid #ef4444;"></div>
     </div>
     </div>
@@ -492,49 +492,37 @@
 
     fileInput.addEventListener('change', () => {
         if (fileInput.files.length > 0) {
-            fileNameDisplay.textContent = fileInput.files[0].name + ' — click Connect to upload and start a run';
+            fileNameDisplay.textContent = fileInput.files[0].name + ' — click Upload & Start Run';
         } else {
-            fileNameDisplay.textContent = 'No file selected — or just pick a repo above and click Connect';
+            fileNameDisplay.textContent = 'No file selected';
         }
     });
 
-    async function connectOrUpload() {
+    async function uploadChecklist() {
         const repo = document.getElementById('uploadRepoSelect').value;
         const file = fileInput.files[0];
         const uploadError = document.getElementById('uploadError');
         uploadError.style.display = 'none';
 
+        if (!file) {
+            uploadError.textContent = 'Please select a file to upload.';
+            uploadError.style.display = 'block';
+            return;
+        }
+
         try {
-            if (file) {
-                // File selected: upload checklist and start run
-                const formData = new FormData();
-                formData.append('repo', repo);
-                formData.append('file', file);
-                const response = await fetch('/api/runs/upload', { method: 'POST', body: formData });
-                if (response.ok) {
-                    const data = await response.json();
-                    alert(`Repository connected and run started: ${data.run_id}`);
-                    location.reload();
-                } else {
-                    const err = await response.json().catch(() => ({}));
-                    uploadError.textContent = `Error: ${err.detail || err.error || 'Upload failed'}`;
-                    uploadError.style.display = 'block';
-                }
+            const formData = new FormData();
+            formData.append('repo', repo);
+            formData.append('file', file);
+            const response = await fetch('/api/runs/upload', { method: 'POST', body: formData });
+            if (response.ok) {
+                const data = await response.json();
+                alert(`Run started: ${data.run_id}`);
+                location.reload();
             } else {
-                // No file: just register the repo in config.yaml
-                const response = await fetch('/api/repos/connect', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ repo })
-                });
-                if (response.ok) {
-                    alert(`Repository "${repo}" connected successfully.`);
-                    location.reload();
-                } else {
-                    const err = await response.json().catch(() => ({}));
-                    uploadError.textContent = `Error: ${err.detail || 'Failed to connect repository'}`;
-                    uploadError.style.display = 'block';
-                }
+                const err = await response.json().catch(() => ({}));
+                uploadError.textContent = `Error: ${err.detail || err.error || 'Upload failed'}`;
+                uploadError.style.display = 'block';
             }
         } catch (err) {
             uploadError.textContent = `Network error: ${err.message}`;
