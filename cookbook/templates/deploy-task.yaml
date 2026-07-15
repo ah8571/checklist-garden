@@ -1,0 +1,28 @@
+# Template: Deploy Task
+# Use when the agent needs to configure deployment, infrastructure, or CI/CD.
+
+tasks:
+  - id: 1
+    repo: "repo-name"
+    description: >
+      Set up deployment configuration for this project.
+
+      ## Target Environment
+      - Platform: (e.g., VPS/Docker/Fly.io/Vercel)
+      - Domain: example.com
+      - HTTPS: yes (Caddy)
+
+      ## Requirements
+      - Requirement 1
+      - Requirement 2
+
+      ## Files to create/modify
+      - Dockerfile
+      - docker-compose.yml
+      - Caddyfile
+      - systemd service file
+
+    status: pending
+    context_files:
+      - "requirements.txt"
+      - "config.yaml"

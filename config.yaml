@@ -28,11 +28,11 @@ notifications:
 repos:
 - branch_prefix: agent/
   default_branch: main
-  install_command: /root/agent/.venv/bin/pip install -r requirements.txt
+  install_command: python -m pip install -r requirements.txt
   name: checklist-garden
-  test_command: /root/agent/.venv/bin/python -m unittest discover tests
+  test_command: python -m pytest tests -v
   url: https://github.com/ah8571/checklist-garden.git
-  workspace_dir: /workspace/checklist-garden
+  workspace_dir: ./workspace/checklist-garden
 timeouts:
   git_operation_seconds: 120
   task_timeout_seconds: 900

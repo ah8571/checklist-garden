@@ -1,0 +1,40 @@
+# Coder Self-Review Checklist
+# Internal checklist for the first-pass coding agent.
+# The runner appends this to the LLM system context before each coding task.
+#
+# Format: each top-level key is a gate the agent must pass before marking a task complete.
+
+plan:
+  - Understand the task description fully — if ambiguous, state your interpretation in "notes"
+  - Read all context_files before making changes
+  - Identify which files need to be created, modified, or deleted
+  - Document your approach in the "plan" field of your JSON response
+
+code:
+  - Follow existing code conventions (naming, indentation, imports) visible in context_files
+  - Do not introduce new dependencies unless the task explicitly requires them
+  - Handle edge cases: empty input, null values, network failures, file-not-found
+  - Never hardcode secrets, API keys, or tokens — use environment variables
+  - Do not modify files listed in PROTECTED_FILES
+  - Prefer small, focused changes over large rewrites
+
+self-review:
+  - Every "edit" action must have an exact "search" string present in the current file
+  - Every "create" action must include the full file content in "content"
+  - Review the diff mentally: does this change break any existing functionality?
+  - Check for copy-paste errors in the generated code
+  - Verify imports are correct and all symbols exist in the project
+
+tests:
+  - If task says tests are expected, the test command must pass
+  - If you add new logic, consider whether existing tests cover it
+  - If the test command fails, read the output and fix the root cause on the first retry
+
+commit:
+  - Write a descriptive commit_message: verb-noun format, reference the task ID
+  - Example: "Task 3: Simplify navigation bar — remove Settings, rename to Runs"
+  - Do not commit debug prints, temporary files, or commented-out code
+
+notes:
+  - Use "notes" to flag anything the reviewer should know (e.g., "I left the old API in place for backward compatibility")
+  - If you cannot fully complete the task, explain what's blocked and why in "notes"

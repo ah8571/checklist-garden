@@ -27,11 +27,22 @@ def setup_logging(log_dir: str = "./logs", level: str = "INFO") -> Path:
     root_logger = logging.getLogger()
     root_logger.setLevel(getattr(logging, level.upper(), logging.INFO))
 
-    # Console handler
-    console = logging.StreamHandler(sys.stdout)
+    # Console handler — wrap stdout for UTF-8 on Windows
+    console_out = sys.stdout
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        console_out = sys.stdout
+    else:
+        try:
+            console_out = open(sys.stdout.fileno(), mode="w", encoding="utf-8",
+                               errors="replace", closefd=False)
+        except Exception:
+            console_out = sys.stdout
+
+    console = logging.StreamHandler(console_out)
     console.setLevel(logging.INFO)
     console.setFormatter(logging.Formatter(
-        "%(asctime)s │ %(levelname)-7s │ %(message)s",
+        "%(asctime)s | %(levelname)-7s | %(message)s",
         datefmt="%H:%M:%S",
     ))
     root_logger.addHandler(console)
@@ -40,7 +51,7 @@ def setup_logging(log_dir: str = "./logs", level: str = "INFO") -> Path:
     file_handler = logging.FileHandler(run_log_file, encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter(
-        "%(asctime)s │ %(name)-20s │ %(levelname)-7s │ %(message)s",
+        "%(asctime)s | %(name)-20s | %(levelname)-7s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     ))
     root_logger.addHandler(file_handler)

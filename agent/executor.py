@@ -17,6 +17,8 @@ import signal
 import time
 from pathlib import Path
 
+import yaml
+
 from agent.git import GitManager
 from agent.llm import LLMClient, BudgetExceededError
 
@@ -81,6 +83,27 @@ class TaskExecutor:
         self.branch_name = branch_name
         self.task_timeout = config.get("timeouts", {}).get("task_timeout_seconds", 900)
         self._current_context = None  # store context for potential retry
+        self._coder_checklist = self._load_coder_checklist()
+
+    def _load_coder_checklist(self) -> str:
+        cookbook_path = Path("cookbook/coder-checklist.yaml")
+        if not cookbook_path.exists():
+            return ""
+        try:
+            raw = yaml.safe_load(cookbook_path.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                return ""
+            lines = []
+            for section, items in raw.items():
+                if isinstance(items, list):
+                    lines.append(f"## {section.upper()}")
+                    for item in items:
+                        if isinstance(item, str):
+                            lines.append(f"- {item}")
+                    lines.append("")
+            return "\n".join(lines)
+        except Exception:
+            return ""
 
     def execute(self, task: dict) -> dict:
         """
@@ -133,8 +156,11 @@ class TaskExecutor:
 
             # Step 4: Call LLM
             logger.info(f"Task {task_id}: Sending to LLM")
+            full_system_prompt = SYSTEM_PROMPT
+            if self._coder_checklist:
+                full_system_prompt += "\n\n" + self._coder_checklist
             messages = [{"role": "user", "content": context}]
-            response_text = self.llm.chat(messages, system_prompt=SYSTEM_PROMPT)
+            response_text = self.llm.chat(messages, system_prompt=full_system_prompt)
 
             # Step 5: Parse and apply changes
             changes = self._parse_response(response_text, context)
@@ -252,6 +278,9 @@ class TaskExecutor:
         self, original_context: str, raw_response: str, partial_json: str, max_continues: int = 3
     ) -> dict:
         """Ask the LLM to continue a truncated JSON response, up to max_continues times."""
+        full_system_prompt = SYSTEM_PROMPT
+        if self._coder_checklist:
+            full_system_prompt += "\n\n" + self._coder_checklist
         for attempt in range(max_continues):
             logger.info(
                 f"LLM response truncated, requesting continuation "
@@ -268,7 +297,7 @@ class TaskExecutor:
                 {"role": "assistant", "content": raw_response},
                 {"role": "user", "content": continue_prompt},
             ]
-            continuation = self.llm.chat(messages, system_prompt=SYSTEM_PROMPT)
+            continuation = self.llm.chat(messages, system_prompt=full_system_prompt)
             continuation_text = continuation.strip()
 
             # Strip any markdown fences from continuation
@@ -298,6 +327,9 @@ class TaskExecutor:
 
     def _retry_parse(self, original_context: str, previous_response: str) -> dict:
         """Send follow-up message asking for valid JSON and parse again."""
+        full_system_prompt = SYSTEM_PROMPT
+        if self._coder_checklist:
+            full_system_prompt += "\n\n" + self._coder_checklist
         logger.info("Retrying LLM parse with follow-up message")
         follow_up = (
             f"{original_context}\n\n"
@@ -311,7 +343,7 @@ class TaskExecutor:
             {"role": "assistant", "content": previous_response},
             {"role": "user", "content": follow_up},
         ]
-        response_text = self.llm.chat(messages, system_prompt=SYSTEM_PROMPT)
+        response_text = self.llm.chat(messages, system_prompt=full_system_prompt)
         text = response_text.strip()
         if text.startswith("```"):
             lines = text.split("\n")
@@ -443,6 +475,9 @@ class TaskExecutor:
 
     def _attempt_fix(self, description: str, test_output: str, context_files: list[str]) -> bool:
         """Send test failure back to LLM for a fix attempt."""
+        full_system_prompt = SYSTEM_PROMPT
+        if self._coder_checklist:
+            full_system_prompt += "\n\n" + self._coder_checklist
         context = self._build_context(description, context_files)
         fix_prompt = (
             f"{context}\n\n"
@@ -454,7 +489,7 @@ class TaskExecutor:
 
         try:
             messages = [{"role": "user", "content": fix_prompt}]
-            response_text = self.llm.chat(messages, system_prompt=SYSTEM_PROMPT)
+            response_text = self.llm.chat(messages, system_prompt=full_system_prompt)
             changes = self._parse_response(response_text, context)
             warnings = self._apply_changes(changes)
             if warnings:

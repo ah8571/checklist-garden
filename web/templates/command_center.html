@@ -68,8 +68,13 @@
             <textarea id="taskTextarea" rows="8" placeholder="Describe tasks here..." style="width: 100%; padding: 0.5rem; background-color: #16213e; color: #eee; border: 1px solid #0f3460; border-radius: 4px; font-family: monospace; min-height: 200px; resize: vertical;"></textarea>
         </div>
         <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button type="submit" style="background-color: #e94560; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Start Run</button>
+            <button type="button" id="previewBtn" style="background-color: #3182ce; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Preview</button>
+            <button type="submit" id="startBtn" style="background-color: #e94560; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; display: none;">Start Run</button>
             <button type="button" id="cleanupBtn" style="background-color: #2563eb; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Cleanup Dead Runs</button>
+        </div>
+        <div id="previewPanel" style="display: none; margin-top: 1rem;">
+            <h4 style="margin-bottom: 0.5rem;">Preview — parsed tasks</h4>
+            <div id="previewContent" style="max-height: 300px; overflow-y: auto; background: #edf2f7; border: 1px solid #e2e8f0; border-radius: 4px; padding: 0.75rem; font-size: 0.85rem;"></div>
         </div>
         <div id="formError" style="display: none; margin-top: 1rem; padding: 1rem; background-color: #7f1d1d; color: #fca5a5; border-radius: 4px; border: 1px solid #ef4444;"></div>
     </form>
@@ -121,24 +126,106 @@
 </div>
 
 <script>
-    document.getElementById('launchForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    let previewData = null;
+
+    document.getElementById('previewBtn').addEventListener('click', async () => {
         const repo = document.getElementById('repoSelect').value;
         const format = document.getElementById('formatSelect').value;
         const inputText = document.getElementById('taskTextarea').value;
-        
+
         const formError = document.getElementById('formError');
+        const previewPanel = document.getElementById('previewPanel');
+        const previewContent = document.getElementById('previewContent');
+        const startBtn = document.getElementById('startBtn');
+        const previewBtn = document.getElementById('previewBtn');
+
         formError.style.display = 'none';
-        
+        previewPanel.style.display = 'none';
+        startBtn.style.display = 'none';
+        previewData = null;
+
+        if (!inputText.trim()) {
+            formError.textContent = 'Please enter task descriptions.';
+            formError.style.display = 'block';
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/runs/preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ repo, format, input_text: inputText })
+            });
+
+            if (response.ok) {
+                previewData = await response.json();
+                const tasks = previewData.tasks || [];
+                if (tasks.length === 0) {
+                    previewContent.innerHTML = '<em>No tasks parsed.</em>';
+                } else {
+                    let html = '<table style="width:100%; border-collapse: collapse;">';
+                    html += '<thead><tr style="border-bottom: 2px solid #cbd5e0;">';
+                    html += '<th style="text-align:left; padding: 4px 8px;">ID</th>';
+                    html += '<th style="text-align:left; padding: 4px 8px;">Repo</th>';
+                    html += '<th style="text-align:left; padding: 4px 8px;">Description</th>';
+                    html += '<th style="text-align:left; padding: 4px 8px;">Context Files</th>';
+                    html += '</tr></thead><tbody>';
+                    for (const t of tasks) {
+                        const desc = (t.description || '').length > 80
+                            ? t.description.substring(0, 77) + '...'
+                            : t.description;
+                        const ctx = (t.context_files || []).join(', ');
+                        html += '<tr style="border-bottom: 1px solid #e2e8f0;">';
+                        html += `<td style="padding: 4px 8px;">${t.id}</td>`;
+                        html += `<td style="padding: 4px 8px;">${t.repo || repo}</td>`;
+                        html += `<td style="padding: 4px 8px;">${desc}</td>`;
+                        html += `<td style="padding: 4px 8px; color: #718096;">${ctx}</td>`;
+                        html += '</tr>';
+                    }
+                    html += '</tbody></table>';
+                    previewContent.innerHTML = html;
+                }
+                previewPanel.style.display = 'block';
+                startBtn.style.display = 'inline-block';
+                previewBtn.textContent = 'Re-preview';
+            } else {
+                const errorData = await response.json();
+                formError.textContent = `Parse error: ${errorData.detail || errorData.error || 'Unknown error'}`;
+                formError.style.display = 'block';
+            }
+        } catch (err) {
+            formError.textContent = `Network error: ${err.message}`;
+            formError.style.display = 'block';
+        }
+    });
+
+    document.getElementById('launchForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const repo = document.getElementById('repoSelect').value;
+        const format = document.getElementById('formatSelect').value;
+        const inputText = document.getElementById('taskTextarea').value;
+
+        const formError = document.getElementById('formError');
+        const startBtn = document.getElementById('startBtn');
+        formError.style.display = 'none';
+
+        if (!previewData) {
+            formError.textContent = 'Please preview tasks first.';
+            formError.style.display = 'block';
+            return;
+        }
+
+        startBtn.disabled = true;
+        startBtn.textContent = 'Starting...';
+
         try {
             const response = await fetch('/api/runs/start', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ repo, format, input_text: inputText })
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 alert(`Run started with ID: ${data.run_id}`);
@@ -146,7 +233,7 @@
             } else {
                 try {
                     const errorData = await response.json();
-                    formError.textContent = `Error: ${errorData.error}`;
+                    formError.textContent = `Error: ${errorData.detail || errorData.error}`;
                 } catch {
                     const errorText = await response.text();
                     formError.textContent = `Error: ${errorText}`;
@@ -156,6 +243,9 @@
         } catch (err) {
             formError.textContent = `Network error: ${err.message}`;
             formError.style.display = 'block';
+        } finally {
+            startBtn.disabled = false;
+            startBtn.textContent = 'Start Run';
         }
     });
 

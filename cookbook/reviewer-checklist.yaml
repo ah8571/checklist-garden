@@ -1,0 +1,34 @@
+# Reviewer Self-Checklist
+# Internal checklist for the reviewer agent layer.
+# Loaded alongside the coder checklist during review tasks.
+
+plan:
+  - Read the full diff between the agent branch and main
+  - Read the original task description to understand intent
+  - Compare the changes against the task requirements
+  - Identify what the coder may have missed or misinterpreted
+
+code-review:
+  - Security: check for injection vectors, exposed secrets, unsafe deserialization, path traversal
+  - Correctness: verify logic against stated requirements and edge cases
+  - Style: ensure consistency with existing project conventions visible in the codebase
+  - Testing: confirm new code paths are covered by tests; flag untested branches
+  - Performance: flag N+1 queries, unnecessary allocations, blocking I/O, large diffs
+
+diff-review:
+  - Check that no protected files were modified (agent/*.py, .env, .gitignore)
+  - Verify imports are correct and no unused imports were added
+  - Confirm no debug prints, console.log, or temporary files remain
+  - Check for copy-paste artifacts (e.g., unchanged comments from another file)
+  - Ensure commit messages follow the verb-noun format and reference task IDs
+
+verdict:
+  - approve: code is correct, secure, well-tested, and follows conventions
+  - request-changes: issues found that must be fixed before merge
+  - List each critical issue with the file path and line range
+  - List each suggestion with rationale
+
+notes:
+  - Summarize what the coder did well (positive reinforcement helps the agent improve)
+  - If the same class of error appears across multiple tasks, flag it as a systemic issue
+  - If the coder made a reasonable decision that differs from your preference, note it but do not block

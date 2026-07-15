@@ -1,0 +1,38 @@
+# Template: Code Task
+# Use this structure when you need the agent to write or modify code.
+#
+# Required fields: id, repo, description, status
+# Optional: context_files (file paths to include in LLM context)
+#
+# Status values: pending | in_progress | done | failed | timeout | budget_exceeded
+
+tasks:
+  - id: 1
+    repo: "repo-name"
+    description: >
+      One-sentence summary of what this task should accomplish.
+
+      ## Context
+      (Optional) Additional background the agent needs to understand the problem.
+
+      ## Requirements
+      - Specific requirement 1
+      - Specific requirement 2
+      - Specific requirement 3
+
+      ## Files to modify (optional hint)
+      - src/file1.py
+      - src/file2.py
+
+      ## Tests
+      - Run `python -m pytest tests/` (the agent auto-runs the configured test command)
+
+      ## Success Criteria
+      - Criterion 1: what must be true for this task to be complete
+      - Criterion 2: edge cases to handle
+      - Criterion 3: performance or style constraints
+
+    status: pending
+    context_files:
+      - "src/file1.py"
+      - "src/file2.py"

@@ -1,0 +1,29 @@
+# Template: Documentation Task
+# Use when the agent needs to write READMEs, API docs, setup guides, or comments.
+
+tasks:
+  - id: 1
+    repo: "repo-name"
+    description: >
+      Write or update documentation for <feature/module>.
+
+      ## Document Type
+      - README / API reference / setup guide / inline comments / changelog
+
+      ## Audience
+      - (e.g., new contributors, end users, API consumers)
+
+      ## What to cover
+      - Topic 1
+      - Topic 2
+      - Topic 3
+
+      ## Style constraints
+      - Keep it concise
+      - Use code fences for examples
+      - Link to related docs where applicable
+
+    status: pending
+    context_files:
+      - "README.md"
+      - "docs/set-up-instructions.md"

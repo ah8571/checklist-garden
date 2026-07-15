@@ -8,6 +8,7 @@ One branch = one PR to review in the morning.
 
 import os
 import re
+import sys
 import logging
 import subprocess
 import urllib.request
@@ -34,6 +35,11 @@ class GitManager:
     def _run(self, cmd: list[str], cwd: Path | None = None, timeout: int = 120) -> subprocess.CompletedProcess:
         """Run a shell command and return the result."""
         work_dir = cwd or self.workspace_dir
+        # Resolve python/pip to the current interpreter's executable
+        if cmd and cmd[0] in ("python", "python3"):
+            cmd = [sys.executable] + cmd[1:]
+        elif cmd and cmd[0] == "pip":
+            cmd = [sys.executable, "-m", "pip"] + cmd[1:]
         logger.debug(f"[{self.name}] Running: {' '.join(cmd)} in {work_dir}")
         result = subprocess.run(
             cmd,
@@ -66,7 +72,7 @@ class GitManager:
         self.workspace_dir.parent.mkdir(parents=True, exist_ok=True)
         auth_url = self._inject_pat(self.url)
         result = self._run(
-            ["git", "clone", auth_url, str(self.workspace_dir)],
+            ["git", "clone", auth_url, str(self.workspace_dir.resolve())],
             cwd=self.workspace_dir.parent,
         )
         if result.returncode != 0:

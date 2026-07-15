@@ -1,0 +1,30 @@
+# Template: Review Task
+# Use when asking the agent to review and critique existing code or PRs.
+
+tasks:
+  - id: 1
+    repo: "repo-name"
+    description: >
+      Review the changes introduced by <branch or commit range>.
+
+      ## Review Focus
+      - Security: check for injection vectors, exposed secrets, unsafe deserialization
+      - Correctness: verify logic against the stated requirements
+      - Style: ensure consistency with project conventions
+      - Testing: confirm test coverage for new and changed paths
+      - Performance: flag N+1 queries, unnecessary allocations, blocking calls
+
+      ## Files to review (optional, otherwise review the full diff)
+      - src/module.py
+      - src/another.py
+
+      ## Expected Output
+      Produce a review with:
+      1. Summary of changes
+      2. Critical issues (must-fix)
+      3. Suggestions (nice-to-have)
+      4. Overall verdict (approve / request-changes)
+
+    status: pending
+    context_files:
+      - "src/module.py"
