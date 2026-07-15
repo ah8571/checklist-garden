@@ -79,10 +79,12 @@ class GitManager:
         return True
 
     def pull_latest(self) -> bool:
-        """Pull latest changes on the default branch."""
+        """Pull latest changes on the default branch, handling dirty trees."""
         logger.info(f"[{self.name}] Pulling latest {self.default_branch}")
+        self._auto_stash()
         self._run(["git", "checkout", self.default_branch])
         result = self._run(["git", "pull", "origin", self.default_branch])
+        self._auto_unstash()
         return result.returncode == 0
 
     def ensure_run_branch(self, branch_name: str) -> str:
@@ -90,7 +92,7 @@ class GitManager:
         Create the run branch if it doesn't exist yet, or check it out if it does.
         Called once per repo at the start of a run.
         """
-        # Check if branch already exists locally
+        self._auto_stash()
         result = self._run(["git", "rev-parse", "--verify", branch_name])
         if result.returncode == 0:
             logger.info(f"[{self.name}] Checking out existing branch: {branch_name}")
@@ -99,7 +101,22 @@ class GitManager:
             logger.info(f"[{self.name}] Creating branch: {branch_name}")
             self._run(["git", "checkout", self.default_branch])
             self._run(["git", "checkout", "-b", branch_name])
+        self._auto_unstash()
         return branch_name
+
+    def _auto_stash(self):
+        """Stash any uncommitted changes so branch operations don't fail."""
+        status = self._run(["git", "status", "--porcelain"])
+        if status.stdout.strip():
+            logger.debug(f"[{self.name}] Stashing dirty working tree")
+            self._run(["git", "stash", "--include-untracked"])
+
+    def _auto_unstash(self):
+        """Pop the most recent stash if one exists."""
+        stash_list = self._run(["git", "stash", "list"])
+        if stash_list.stdout.strip():
+            logger.debug(f"[{self.name}] Popping stash")
+            self._run(["git", "stash", "pop"])
 
     def stage_and_commit(self, message: str) -> bool:
         """Stage all changes and commit."""

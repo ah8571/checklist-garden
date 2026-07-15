@@ -1,29 +1,18 @@
 [Unit]
-Description=Checklist Garden Web Application
+Description=Checklist Garden
 After=network.target
 
 [Service]
 Type=simple
-User=www-data
-WorkingDirectory=/opt/checklist-garden
-ExecStart=/usr/bin/python3 /opt/checklist-garden/web/app.py
-Restart=on-failure
+User=root
+WorkingDirectory=/workspace/checklist-garden
+EnvironmentFile=/workspace/checklist-garden/.env
+ExecStart=/root/agent/.venv/bin/uvicorn web.app:app --host 127.0.0.1 --port 8000
+Restart=always
 RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-[Unit]
-Description=Checklist Garden Web Application
-After=network.target
-
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/opt/checklist-garden
-EnvironmentFile=/opt/checklist-garden/.env
-ExecStart=/usr/bin/python3 /opt/checklist-garden/web/app.py
-Restart=on-failure
-RestartSec=5
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=5
 
 [Install]
 WantedBy=multi-user.target
