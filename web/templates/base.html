@@ -8,29 +8,6 @@
     <link rel="icon" type="image/png" href="/public/favicon.png">
     <style>
         :root {
-            --body-bg: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-color: #1a202c;
-            --nav-bg: #ffffff;
-            --nav-border: #e2e8f0;
-            --card-border: #e2e8f0;
-            --code-bg: #edf2f7;
-            --code-color: #2d3748;
-            --link-color: #3182ce;
-            --link-hover: #2b6cb0;
-            --footer-bg: #f8f9fa;
-            --footer-text: #a0aec0;
-            --footer-border: #e2e8f0;
-            --hamburger-color: #1a202c;
-            --hamburger-hover: #3182ce;
-            --nav-link-color: #1a202c;
-            --nav-link-hover: #3182ce;
-            --nav-links-bg: #ffffff;
-            --nav-links-border: #e2e8f0;
-            --nav-links-link-border: #e2e8f0;
-            --error-color: #e94560;
-        }
-        [data-theme="dark"] {
             --body-bg: #1a202c;
             --card-bg: #2d3748;
             --text-color: #e2e8f0;
@@ -73,15 +50,12 @@
             inset: 0;
             z-index: -1;
             pointer-events: none;
-            opacity: 0.3;
+            opacity: 0.1;
             background-image:
                 linear-gradient(var(--card-border) 1px, transparent 1px),
                 linear-gradient(90deg, var(--card-border) 1px, transparent 1px);
             background-size: 48px 48px;
             background-position: -1px -1px;
-        }
-        [data-theme="dark"] body::before {
-            opacity: 0.1;
         }
         .container {
             max-width: 1200px;
@@ -167,20 +141,21 @@
         .auth-card {
             width: 100%;
             max-width: 400px;
-            background-color: #ffffff;
+            background-color: var(--card-bg);
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
             padding: 2rem;
+            border: 1px solid var(--card-border);
         }
         .auth-title {
             margin-bottom: 1.5rem;
             text-align: center;
-            color: #1a202c;
+            color: var(--text-color);
         }
         .auth-error {
-            color: #e53e3e;
-            background-color: #fff5f5;
-            border: 1px solid #fed7d7;
+            color: var(--error-color);
+            background-color: rgba(252,129,129,0.1);
+            border: 1px solid var(--error-color);
             padding: 0.75rem;
             border-radius: 4px;
             margin-bottom: 1rem;
@@ -191,22 +166,27 @@
         .auth-field label {
             display: block;
             margin-bottom: 0.5rem;
-            color: #4a5568;
+            color: var(--text-color);
+            opacity: 0.8;
         }
         .auth-field input {
             width: 100%;
             padding: 0.75rem;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e0;
+            background-color: var(--code-bg);
+            border: 1px solid var(--card-border);
             border-radius: 4px;
-            color: #1a202c;
+            color: var(--text-color);
             box-sizing: border-box;
+        }
+        .auth-field input:focus {
+            outline: none;
+            border-color: var(--link-color);
         }
         .auth-btn {
             width: 100%;
             padding: 0.75rem;
-            background-color: #3182ce;
-            color: white;
+            background-color: var(--link-color);
+            color: #1a202c;
             border: none;
             border-radius: 4px;
             font-weight: bold;
@@ -214,15 +194,15 @@
             margin-top: 0.5rem;
         }
         .auth-btn:hover {
-            background-color: #2b6cb0;
+            filter: brightness(1.15);
         }
         .auth-link {
             text-align: center;
             margin-top: 1.5rem;
-            color: #4a5568;
+            color: var(--footer-text);
         }
         .auth-link a {
-            color: #3182ce;
+            color: var(--link-color);
         }
         footer {
             text-align: center;
@@ -253,19 +233,6 @@
         }
         .hamburger:hover span {
             background-color: var(--hamburger-hover);
-        }
-        .theme-toggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.3rem;
-            line-height: 1;
-            padding: 0 0.2rem;
-            color: var(--text-color);
-            transition: color 0.2s;
-        }
-        .theme-toggle:hover {
-            color: var(--link-color);
         }
         @media (max-width: 768px) {
             .hamburger {
@@ -316,9 +283,6 @@
                 {% if user_email is defined and user_email %}
                 <a href="/logout">Logout</a>
                 {% endif %}
-                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
-                    <span id="themeIcon">☀️</span>
-                </button>
             </div>
         </div>
     </nav>
@@ -345,34 +309,6 @@
             a.addEventListener('click', () => navLinks.classList.remove('open'));
         });
 
-        // Dark mode toggle
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const body = document.body;
-
-        function setTheme(theme) {
-            if (theme === 'dark') {
-                body.setAttribute('data-theme', 'dark');
-                themeIcon.textContent = '🌙';
-            } else {
-                body.removeAttribute('data-theme');
-                themeIcon.textContent = '☀️';
-            }
-            localStorage.setItem('theme', theme);
-        }
-
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            setTheme(savedTheme);
-        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            setTheme('dark');
-        }
-
-        themeToggle.addEventListener('click', () => {
-            const current = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            setTheme(current);
-        });
     </script>
 </body>
 </html>
