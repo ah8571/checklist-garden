@@ -21,9 +21,27 @@
     "pid": 28448,
     "repo": "checklist-garden",
     "started_at": "2026-07-15T00:00:12.416016+00:00",
-    "status": "running",
+    "status": "finished",
     "log_file": "runs/checklist-garden-20260715-000012/output.log",
     "checklist_file": "runs/checklist-garden-20260715-000012/checklist.yaml",
+    "config_path": "config.yaml"
+  },
+  "checklist-garden-20260715-003619": {
+    "pid": 31433,
+    "repo": "checklist-garden",
+    "started_at": "2026-07-15T00:36:19.930947+00:00",
+    "status": "finished",
+    "log_file": "runs/checklist-garden-20260715-003619/output.log",
+    "checklist_file": "runs/checklist-garden-20260715-003619/checklist.yaml",
+    "config_path": "config.yaml"
+  },
+  "checklist-garden-20260715-004323": {
+    "pid": 31973,
+    "repo": "checklist-garden",
+    "started_at": "2026-07-15T00:43:23.437978+00:00",
+    "status": "running",
+    "log_file": "runs/checklist-garden-20260715-004323/output.log",
+    "checklist_file": "runs/checklist-garden-20260715-004323/checklist.yaml",
     "config_path": "config.yaml"
   }
 }

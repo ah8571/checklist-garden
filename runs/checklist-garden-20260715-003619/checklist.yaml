@@ -1,0 +1,14 @@
+tasks:
+- context_files:
+  - web/templates/command_center.html
+  description: In web/templates/command_center.html, modify the active runs table.
+    Each row should be expandable with a chevron icon that reveals the run's log and
+    report links when clicked. Use a details/summary HTML element for each row. The
+    chevron should rotate when expanded. Remove the separate chevron-based Active
+    Runs section - the status column in the table already shows run status. Keep all
+    Jinja2 variable names.
+  id: 1
+  repo: checklist-garden
+  status: failed
+  branch: agent/overnight-2026-07-15-003622
+  log_file: logs/task_1.log

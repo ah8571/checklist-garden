@@ -6,9 +6,11 @@ import yaml
 from pathlib import Path
 import os
 import tempfile
+import json
 from datetime import datetime
 from pydantic import BaseModel
 from collections import deque
+import glob
 
 from web.auth import (
     init_users_db,
@@ -26,6 +28,7 @@ from web.config import (
     AGENT_LOG_DIR
 )
 from agent.process import RunManager
+import signal
 from agent.checklist import parse_markdown, parse_yaml_text
 from web.github_repos import merge_with_config, get_repo_defaults
 
@@ -699,3 +702,94 @@ async def get_run_logs(
             lines = []
     
     return JSONResponse(content={"run_id": run_id, "lines": lines})
+
+
+@app.post("/api/runs/cleanup")
+async def cleanup_runs(
+    user_email: str = Depends(get_current_user)
+):
+    """Check all runs in the registry, mark dead processes as finished."""
+    manager = RunManager()
+    runs = manager.list_runs()
+    fixed_count = 0
+    already_finished_count = 0
+    for run in runs:
+        if run.get("status") in ("running", "started"):
+            pid = run.get("pid")
+            if pid is not None:
+                try:
+                    # Send signal 0 to check if process exists
+                    os.kill(pid, 0)
+                except OSError:
+                    # Process is dead, mark as finished
+                    try:
+                        manager.stop_run(run["run_id"])
+                        fixed_count += 1
+                    except Exception:
+                        pass
+                else:
+                    already_finished_count += 1
+            else:
+                # No PID, mark as finished
+                try:
+                    manager.stop_run(run["run_id"])
+                    fixed_count += 1
+                except Exception:
+                    pass
+    return JSONResponse(content={
+        "fixed": fixed_count,
+        "already_finished": already_finished_count,
+        "total_checked": len(runs)
+    })
+
+
+@app.get("/api/runs/{run_id}/report")
+async def get_run_report(
+    run_id: str,
+    user_email: str = Depends(get_current_user)
+):
+    """Return the markdown report content for a given run_id."""
+    # Validate run_id to prevent path traversal
+    if '..' in run_id or '/' in run_id or '\\' in run_id:
+        raise HTTPException(status_code=400, detail="Invalid run ID")
+    
+    # Read registry.json to find the run's started_at timestamp
+    registry_path = Path("runs/registry.json")
+    if not registry_path.exists():
+        raise HTTPException(status_code=404, detail="Registry not found")
+    
+    try:
+        with open(registry_path, 'r') as f:
+            registry = json.load(f)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to read registry")
+    
+    # Find the run entry by run_id
+    run_entry = None
+    for entry in registry:
+        if entry.get("run_id") == run_id:
+            run_entry = entry
+            break
+    
+    if run_entry is None:
+        raise HTTPException(status_code=404, detail="Run not found in registry")
+    
+    started_at = run_entry.get("started_at")
+    if not started_at:
+        raise HTTPException(status_code=404, detail="Run has no started_at timestamp")
+    
+    # Construct the report filename pattern
+    # started_at format example: "20260715_002207"
+    report_pattern = f"run_report_{started_at}.md"
+    report_path = AGENT_LOG_DIR / report_pattern
+    
+    if not report_path.exists() or not report_path.is_file():
+        raise HTTPException(status_code=404, detail="Report file not found")
+    
+    try:
+        with open(report_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to read report file")
+    
+    return Response(content=content, media_type="text/plain")

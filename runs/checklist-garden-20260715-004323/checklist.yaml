@@ -1,0 +1,50 @@
+tasks:
+- context_files:
+  - web/app.py
+  - web/templates/command_center.html
+  description: 'Add a new endpoint in web/app.py: GET /api/runs/{run_id}/report that
+    reads and returns the content of logs/run_report_{timestamp}.md for the given
+    run_id. Find the report file by looking up the run_id in runs/registry.json to
+    get the started_at timestamp, then construct the filename pattern and find the
+    matching report. Add a proper View Report link in the command center chevron pointing
+    to /api/runs/{run_id}/report. Return the markdown content as plain text.'
+  id: 1
+  repo: checklist-garden
+  status: failed
+  branch: agent/overnight-2026-07-15-004326
+  log_file: logs/task_1.log
+- context_files:
+  - web/templates/base.html
+  description: 'Add a dark mode toggle to web/templates/base.html. Add a small sun/moon
+    button in the nav that toggles a data-theme attribute on the body element. Store
+    the preference in localStorage. When dark mode is active, swap the light theme
+    CSS variables: body bg becomes #1a1a2e, card bg becomes #16213e, text becomes
+    #eee, nav becomes #16213e. Use CSS custom properties (variables) on :root and
+    [data-theme="dark"] to make the toggle clean. Keep all Jinja2 blocks unchanged.'
+  id: 2
+  repo: checklist-garden
+  status: failed
+  branch: agent/overnight-2026-07-15-004326
+  log_file: logs/task_2.log
+- context_files:
+  - agent/process.py
+  description: Modify agent/process.py RunManager.get_status to automatically mark
+    runs as finished when the subprocess is dead but the status is still running.
+    In the existing PID liveness check, if the process is dead, call update_run_status
+    to finished and update the registry. This prevents stale "running" entries from
+    accumulating.
+  id: 3
+  repo: checklist-garden
+  status: failed
+  branch: agent/overnight-2026-07-15-004326
+  log_file: logs/task_3.log
+- context_files:
+  - web/app.py
+  - web/templates/command_center.html
+  description: Add a /api/runs/cleanup endpoint to web/app.py that iterates all runs
+    in the registry, checks if each running process is actually alive, and marks dead
+    ones as finished. Add a small Cleanup button in the command center that calls
+    this endpoint. Return JSON with counts of how many runs were fixed.
+  id: 4
+  repo: checklist-garden
+  status: in_progress

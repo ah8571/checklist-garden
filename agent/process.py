@@ -134,7 +134,9 @@ class RunManager:
         if not alive and entry["status"] == "running":
             entry["status"] = "finished"
             self.registry[run_id]["status"] = "finished"
+            self.registry[run_id]["finished_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
             self._save_registry()
+            logger.info(f"Auto-marked run {run_id} as finished (PID {pid} no longer alive)")
         
         # Load checklist to get task counts
         checklist_file = Path(entry["checklist_file"])
