@@ -22,3 +22,26 @@
 00:36:32 │ INFO    │ Applied edit (search/replace): web/templates/command_center.html
 00:36:32 │ INFO    │ [checklist-garden] Running tests: /root/agent/.venv/bin/python -m unittest discover tests
 00:36:35 │ INFO    │ [checklist-garden] Tests passed
+00:36:35 │ INFO    │ [checklist-garden] Committed: Make active runs table rows expandable with details/summary and rotating chevron
+00:36:35 │ INFO    │ [checklist-garden] Pushing agent/overnight-2026-07-15-003622
+00:36:35 │ ERROR   │ [checklist-garden] Command failed: remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/ah8571/checklist-garden.git/'
+00:36:35 │ ERROR   │ [checklist-garden] Push failed: remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/ah8571/checklist-garden.git/'
+
+00:36:35 │ INFO    │ Task 1 Γ£ù [failed] in 13.6s ΓÇö branch: agent/overnight-2026-07-15-003622
+00:36:35 │ INFO    │ 
+============================================================
+00:36:35 │ INFO    │ RUN SUMMARY
+00:36:35 │ INFO    │ ============================================================
+00:36:35 │ INFO    │   Completed: 0
+00:36:35 │ INFO    │   Failed:    1
+00:36:35 │ INFO    │   Timeout:   0
+00:36:35 │ INFO    │   Budget:    0
+00:36:35 │ INFO    │   API calls: 1 | Tokens: 3,109 in / 1,335 out | Est. cost: $0.0023
+00:36:35 │ INFO    │ 
+Failed tasks:
+00:36:35 │ INFO    │   ✗ Task 1 — Push failed
+00:36:35 │ INFO    │ ============================================================
+00:36:35 │ INFO    │ Results saved to logs/results.json
+00:36:35 │ INFO    │ Run report generated: logs/run_report_20260715_003635.md

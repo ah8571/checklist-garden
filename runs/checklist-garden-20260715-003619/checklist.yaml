@@ -9,4 +9,6 @@ tasks:
     Jinja2 variable names.
   id: 1
   repo: checklist-garden
-  status: in_progress
+  status: failed
+  branch: agent/overnight-2026-07-15-003622
+  log_file: logs/task_1.log
