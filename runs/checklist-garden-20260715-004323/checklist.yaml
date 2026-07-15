@@ -23,7 +23,9 @@ tasks:
     [data-theme="dark"] to make the toggle clean. Keep all Jinja2 blocks unchanged.'
   id: 2
   repo: checklist-garden
-  status: in_progress
+  status: failed
+  branch: agent/overnight-2026-07-15-004326
+  log_file: logs/task_2.log
 - context_files:
   - agent/process.py
   description: Modify agent/process.py RunManager.get_status to automatically mark
@@ -33,7 +35,7 @@ tasks:
     accumulating.
   id: 3
   repo: checklist-garden
-  status: pending
+  status: in_progress
 - context_files:
   - web/app.py
   - web/templates/command_center.html

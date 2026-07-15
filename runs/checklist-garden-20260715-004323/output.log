@@ -68,3 +68,25 @@ fatal: Authentication failed for 'https://github.com/ah8571/checklist-garden.git
 00:44:04 │ INFO    │ Applied edit (search/replace): web/templates/base.html
 00:44:04 │ INFO    │ [checklist-garden] Running tests: /root/agent/.venv/bin/python -m unittest discover tests
 00:44:07 │ INFO    │ [checklist-garden] Tests passed
+00:44:07 │ INFO    │ [checklist-garden] Committed: Add dark mode toggle with CSS custom properties and localStorage persistence
+00:44:07 │ INFO    │ [checklist-garden] Pushing agent/overnight-2026-07-15-004326
+00:44:07 │ ERROR   │ [checklist-garden] Command failed: remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/ah8571/checklist-garden.git/'
+00:44:07 │ ERROR   │ [checklist-garden] Push failed: remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/ah8571/checklist-garden.git/'
+
+00:44:07 │ INFO    │ Task 2 Γ£ù [failed] in 25.4s ΓÇö branch: agent/overnight-2026-07-15-004326
+00:44:07 │ INFO    │ 
+──────────────────────────────────────────────────
+00:44:07 │ INFO    │ Task 3: Modify agent/process.py RunManager.get_status to automatically mark runs as finished when the subprocess is dead but the status is still running. In the existing PID liveness check, if the process is dead, call update_run_status to finished and update the registry. This prevents stale "running" entries from accumulating.
+00:44:07 │ INFO    │ Repo: checklist-garden | Branch: agent/overnight-2026-07-15-004326
+00:44:07 │ INFO    │ ──────────────────────────────────────────────────
+00:44:07 │ INFO    │ Task 3: Starting ΓÇö Modify agent/process.py RunManager.get_status to automatically mark runs as finished when the subprocess is dead but the status is still running. In the existing PID liveness check, if the process is dead, call update_run_status to finished and update the registry. This prevents stale "running" entries from accumulating.
+00:44:07 │ INFO    │ [checklist-garden] Installing deps: /root/agent/.venv/bin/pip install -r requirements.txt
+00:44:11 │ INFO    │ Task 3: Sending to LLM
+00:44:11 │ INFO    │ HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+00:44:14 │ INFO    │ DeepSeek response in 4.0s — 3159 in / 426 out
+00:44:14 │ INFO    │ [checklist-garden] Wrote agent/process.py
+00:44:14 │ INFO    │ Applied edit (search/replace): agent/process.py
+00:44:14 │ INFO    │ [checklist-garden] Running tests: /root/agent/.venv/bin/python -m unittest discover tests
+00:44:19 │ INFO    │ [checklist-garden] Tests passed
