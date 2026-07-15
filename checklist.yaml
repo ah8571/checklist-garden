@@ -1,188 +1,63 @@
+# =============================================================
+# Task Checklist � Dashboard QoL Improvements
+# =============================================================
+# Paste these tasks into the Command Center to run the agent.
+
 tasks:
-- id: 1
-  repo: checklist-garden
-  description: 'Rewrite all CSS in web/templates/base.html to a clean, minimalist
-    light theme. Replace the dark navy (#1a1a2e / #16213e / #0f3460) color scheme
-    with:
+  - id: 1
+    repo: checklist-garden
+    description: >
+      Add a proper run detail page at /runs/{run_id} that shows a per-task
+      breakdown. Create/replace web/templates/run_detail.html.
 
-    - Body background: #f8f9fa (light grey) - Card/container backgrounds: #ffffff
-    (white) - Card borders: #e2e8f0 (subtle grey border) - Text color: #1a202c (dark
-    grey, not pure black) - Nav background: #ffffff with a subtle bottom border (#e2e8f0)
-    - Links and accent color: #3182ce (blue, not red) - Keep #e94560 (red) only for
-    error messages and danger buttons - Code/pre blocks: #edf2f7 background, #2d3748
-    text - Footer: #f8f9fa background, #a0aec0 text
+      The page shows: run ID and repo as title, overall status pill,
+      started-at timestamp, and a table of tasks with columns ID, Description
+      (80 char truncation), Status (colored pill), Branch, Elapsed seconds,
+      and a Log link (to task_N.log).
 
-    Remove the red eye SVG icon from the nav logo. Replace the nav title "Checklist
-    Garden" with just plain text, no SVG icon next to it. Keep the hamburger menu
-    responsive behavior intact.
+      Add GET /runs/{run_id} route in web/app.py that validates run_id,
+      looks up the run via RunManager, reads the run checklist.yaml
+      for per-task status, reads logs/results.json for timing, and
+      renders the template.
 
-    Keep all existing HTML structure and Jinja2 blocks unchanged — only modify the
-    <style> block. Do not touch any other templates.
+      In command_center.html runs table, change the run_id link to point
+      to /runs/{run_id} instead of /command-center/{run_id}/logs.
+      Add a View Logs link on the detail page linking to the logs page.
+    status: pending
+    context_files:
+      - web/app.py
+      - web/templates/command_center.html
+      - web/templates/run_detail.html
+      - agent/process.py
 
-    '
-  status: done
-  context_files:
-  - web/templates/base.html
-  branch: agent/overnight-2026-07-15-123629
-  log_file: logs/task_1.log
-- id: 2
-  repo: checklist-garden
-  description: 'Simplify the navigation bar in web/templates/base.html. The current
-    nav has links for "Command Center" and "Settings" plus Logout. Change it to:
+  - id: 2
+    repo: checklist-garden
+    description: >
+      Replace ISO timestamps in the runs table with relative times.
 
-    - "Runs" linking to /command-center (keep same URL for now) - "Logout" (only shown
-    when user is logged in) - Remove "Settings" link entirely
+      In command_center.html, add a JS function that selects timestamp
+      cells (add class ts-cell), converts ISO strings to relative:
+      less than 60s = just now, less than 60m = Xm ago, less than 24h = Xh ago,
+      less than 7d = Xd ago, else show YYYY-MM-DD. Keep full timestamp
+      in title attribute for hover tooltip.
+    status: pending
+    context_files:
+      - web/templates/command_center.html
 
-    The nav should be clean: brand name on the left, two links on the right. No dropdowns,
-    no icons. Keep the hamburger menu for mobile but it should show the same two links.
+  - id: 3
+    repo: checklist-garden
+    description: >
+      Add summary stat cards above the runs table in command_center.html.
+      Horizontal flexbox row: Total Runs, Active, Completed, Failed.
 
-    '
-  status: done
-  context_files:
-  - web/templates/base.html
-  branch: agent/overnight-2026-07-15-123800
-  log_file: logs/task_2.log
-- id: 3
-  repo: checklist-garden
-  description: "Simplify web/templates/command_center.html. The current page has many\
-    \ sections and cards. Streamline it to focus on the core workflow:\n1. Top section:\
-    \ a large textarea for pasting tasks, with a repo\n   selector dropdown and format\
-    \ selector (quick/markdown/yaml).\n   Label it \"What should the agent work on?\"\
-    \n\n2. A prominent \"Start Run\" button below the textarea.\n3. Below that, a\
-    \ simple table of active/recent runs showing:\n   run_id, repo, status, started_at.\
-    \ Each row links to its logs.\n\n4. Remove: the connected repos list, the checklist\
-    \ preview panel,\n   the raw YAML editor, the upload file button, and any other\n\
-    \   sections not directly needed for \"paste, run, check.\"\n\nKeep the same Jinja2\
-    \ template variable names used by the backend (user_email, repos, all_repos, active_runs,\
-    \ log_files, tasks, checklist_raw, checklist_error) so the backend doesn't break.\
-    \ Some may become unused — that's fine, just don't reference them in the simplified\
-    \ template.\n"
-  status: done
-  context_files:
-  - web/templates/command_center.html
-  - web/app.py
-  branch: agent/overnight-2026-07-15-123904
-  log_file: logs/task_3.log
-- id: 4
-  repo: checklist-garden
-  description: "Rewrite web/templates/login.html and web/templates/register.html with\
-    \ a clean, centered card layout matching the new light theme.\nBoth pages should:\
-    \ - Have a centered white card (max-width 400px) on the light grey\n  background\n\
-    - Use the blue accent (#3182ce) for buttons - Remove any dark-themed styling remnants\
-    \ - Keep the same form fields, error display, and Jinja2 variables\n  exactly\
-    \ as they are so the backend works unchanged\n\nFor login.html: email input, password\
-    \ input, \"Login\" button, link to /register.\nFor register.html: email input,\
-    \ password input, \"Register\" button, link to /login.\n"
-  status: done
-  context_files:
-  - web/templates/login.html
-  - web/templates/register.html
-  - web/templates/base.html
-  branch: agent/overnight-2026-07-15-124011
-  log_file: logs/task_4.log
-- id: 5
-  repo: checklist-garden
-  description: "Add a template system so users can start a run from a predefined cookbook\
-    \ template instead of typing tasks manually.\nCreate agent/template.py with the\
-    \ following function:\ndef load_template(name: str) -> dict:\n    '''Load a task\
-    \ template from cookbook/templates/ and return\n       a checklist dict with all\
-    \ tasks set to pending.'''\n    # Read cookbook/templates/<name>.yaml\n    # Parse\
-    \ and validate\n    # Return the checklist dict\n\nSupported template names: code,\
-    \ review, deploy, doc (corresponding to the files in cookbook/templates/).\nAdd\
-    \ a \"Start from Template\" button to command_center.html that shows a dropdown\
-    \ of available templates, pre-fills the textarea with the template content, and\
-    \ selects the correct format (yaml).\nAdd an API endpoint POST /api/templates/preview\
-    \ that takes a template name and returns the rendered template content as text.\n"
-  status: pending
-  context_files:
-  - web/app.py
-  - web/templates/command_center.html
-  - agent/checklist.py
-  - cookbook/templates/code-task.yaml
-- id: 6
-  repo: checklist-garden
-  description: 'The coder-checklist.yaml is loaded by the executor at runtime, but
-    users and agents should be able to view and edit it from the dashboard.
+      Style: white card, subtle border, large number plus small label below.
+      Light theme colors.
 
-    Add a GET /cookbook route that displays the contents of cookbook/coder-checklist.yaml
-    in a formatted, editable textarea.
+      Add GET /api/runs/stats endpoint returning JSON with keys total,
+      active, finished, failed.
 
-    Add a POST /cookbook/save route that saves changes to the file (with YAML validation,
-    same pattern as /checklist/save).
-
-    Add a "Cookbook" link to the navigation bar (next to "Runs").
-
-    Keep the layout consistent with the light theme: white card, blue accent, clean
-    typography.
-
-    '
-  status: pending
-  context_files:
-  - web/app.py
-  - web/templates/base.html
-  - cookbook/coder-checklist.yaml
-- id: 7
-  repo: checklist-garden
-  description: "Implement a reviewer agent layer that runs after the coder completes\
-    \ a task. The reviewer inspects the diff between the agent branch and main, then\
-    \ produces a review report with: - Critical issues (must-fix before merge) - Suggestions\
-    \ (nice-to-have) - Overall verdict (approve / request-changes) - If request-changes:\
-    \ loop back to coder for fixes (max 2 rounds)\nCreate agent/reviewer.py with:\n\
-    class ReviewerAgent:\n    def __init__(self, llm: LLMClient, git: GitManager):\n\
-    \        # Uses a higher-capability model or different config from coder\n\n \
-    \   def review(self, task_result: dict, task_description: str) -> dict:\n    \
-    \    # 1. Get diff between main and the run branch\n        # 2. Send diff + task\
-    \ description to LLM for review\n        # 3. Parse review response into structured\
-    \ verdict\n        # Returns: {\"verdict\": \"approve\"|\"request-changes\",\n\
-    \        #           \"critical\": [...], \"suggestions\": [...],\n        # \
-    \          \"summary\": \"...\"}\n\nAdd a reviewer system prompt (load from cookbook/\
-    \ if available).\nModify agent/runner.py so that after TaskExecutor completes\
-    \ a task with status \"done\", it optionally invokes the reviewer. Gate this behind\
-    \ a config flag in config.yaml:\n  reviewer:\n    enabled: true\n    max_rounds:\
-    \ 2\n    model: deepseek-chat  # or use default_provider\n\nThe reviewer uses\
-    \ the SAME LLM client as the coder (no extra API setup needed).\n"
-  status: pending
-  context_files:
-  - agent/executor.py
-  - agent/runner.py
-  - agent/llm.py
-  - agent/git.py
-  - config.yaml
-  - cookbook/templates/review-task.yaml
-- id: 8
-  repo: checklist-garden
-  description: "Expose reviewer results in the web dashboard:\n1. Add a GET /api/runs/{run_id}/review\
-    \ endpoint that returns\n   the review verdict for each task in the run (JSON).\n\
-    \n2. In command_center.html, add a \"Review\" column to the runs\n   table showing\
-    \ the overall verdict (green check for approve,\n   yellow for request-changes,\
-    \ red for critical issues).\n\n3. Add a run detail page at /runs/{run_id} that\
-    \ shows:\n   - Each task's status, description, and review verdict\n   - The diff\
-    \ summary (if available)\n   - Links to logs and the GitHub PR\n\n4. Store review\
-    \ results alongside task results in the runs\n   directory (runs/{run_id}/review.json).\n"
-  status: pending
-  context_files:
-  - web/app.py
-  - web/templates/command_center.html
-  - agent/runner.py
-- id: 9
-  repo: checklist-garden
-  description: "Implement agent context memory using a .agent-wiki.md file in the\
-    \ repo root (referenced in DEVELOPER_ROADMAP_V1.md).\nCreate agent/wiki.py with:\n\
-    def load_wiki(repo_path: Path) -> str:\n    '''Read .agent-wiki.md from the repo\
-    \ root. Returns empty\n       string if the file doesn't exist.'''\n\ndef append_to_wiki(repo_path:\
-    \ Path, entry: str):\n    '''Append a dated entry to .agent-wiki.md.'''\n\ndef\
-    \ generate_wiki_summary(llm: LLMClient, tasks: list[dict],\n                 \
-    \          results: list[dict]) -> str:\n    '''Ask the LLM to generate a one-paragraph\
-    \ summary of\n       what was accomplished in the run, which patterns worked,\n\
-    \       and what to watch for next time.'''\n\nModify agent/executor.py _build_context()\
-    \ to check for and include .agent-wiki.md content as part of the context sent\
-    \ to the LLM (after the file tree, before context files).\nModify agent/runner.py\
-    \ to call generate_wiki_summary() after all tasks complete and append the result\
-    \ to .agent-wiki.md.\nThis gives the agent persistent memory across runs — it\
-    \ learns about the codebase conventions and past decisions.\n"
-  status: pending
-  context_files:
-  - agent/executor.py
-  - agent/runner.py
-  - agent/llm.py
-  - DEVELOPER_ROADMAP_V1.md
+      Stats bar fetches this on page load. Show dash if fetch fails.
+    status: pending
+    context_files:
+      - web/app.py
+      - web/templates/command_center.html
