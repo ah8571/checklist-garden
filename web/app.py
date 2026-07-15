@@ -793,3 +793,46 @@ async def get_run_report(
         raise HTTPException(status_code=500, detail="Failed to read report file")
     
     return Response(content=content, media_type="text/plain")
+
+
+@app.get("/cookbook", response_class=HTMLResponse)
+async def cookbook_page(
+    request: Request,
+    user_email: str = Depends(get_current_user)
+):
+    """Display and edit the coder checklist."""
+    cookbook_path = Path("cookbook/coder-checklist.yaml")
+    cookbook_raw = ""
+    if cookbook_path.exists():
+        cookbook_raw = cookbook_path.read_text(encoding="utf-8")
+
+    error = request.query_params.get("error", "")
+    return templates.TemplateResponse(
+        request,
+        "cookbook.html",
+        {
+            "user_email": user_email,
+            "cookbook_raw": cookbook_raw,
+            "error": error,
+        }
+    )
+
+
+@app.post("/cookbook/save")
+async def cookbook_save(
+    request: Request,
+    cookbook_yaml: str = Form(...),
+    user_email: str = Depends(get_current_user)
+):
+    """Save coder checklist after validation."""
+    cookbook_path = Path("cookbook/coder-checklist.yaml")
+    try:
+        import yaml
+        parsed = yaml.safe_load(cookbook_yaml)
+        if not isinstance(parsed, dict):
+            raise ValueError("YAML must be a dictionary")
+    except Exception:
+        return RedirectResponse(url="/cookbook?error=1", status_code=status.HTTP_302_FOUND)
+
+    cookbook_path.write_text(cookbook_yaml, encoding="utf-8")
+    return RedirectResponse(url="/cookbook", status_code=status.HTTP_302_FOUND)
