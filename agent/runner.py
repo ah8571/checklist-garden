@@ -17,6 +17,7 @@ import argparse
 import json
 import logging
 import sys
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 
@@ -347,61 +348,92 @@ def run(args):
         repo_branches[repo_name] = branch_name
         logger.info(f"Repo '{repo_name}' → branch '{branch_name}'")
 
-    # Execute tasks serially
+    # Execute tasks — parallel across repos, serial within each repo
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from copy import deepcopy
+
     results = []
-    # Track repos that have at least one committed task
     repos_with_commits = set()
+
+    # Group pending tasks by repo while preserving order
+    repo_tasks: dict[str, list[dict]] = {}
     for task in pending:
-        task_id = task["id"]
-        repo_name = task["repo"]
-        git = repos[repo_name]
-        branch_name = repo_branches[repo_name]
+        repo_tasks.setdefault(task["repo"], []).append(task)
 
-        # Per-task log handler
-        task_handler = get_task_logger(log_dir, task_id)
+    def run_repo_tasks(repo_name: str, tasks: list[dict]) -> list[dict]:
+        """Run tasks for a single repo serially (called in parallel per repo)."""
+        repo_results = []
+        repo_llm = LLMClient(deepcopy(config))
+        repo_git = repos[repo_name]
+        repo_branch = repo_branches[repo_name]
 
-        logger.info(f"\n{'─' * 50}")
-        logger.info(f"Task {task_id}: {task['description']}")
-        logger.info(f"Repo: {repo_name} | Branch: {branch_name}")
-        logger.info(f"{'─' * 50}")
+        for task in tasks:
+            task_id = task["id"]
+            task_handler = get_task_logger(log_dir, task_id)
 
-        if args.dry_run:
-            logger.info(f"[DRY RUN] Would execute task {task_id}")
-            # Update status in checklist
-            task["status"] = "dry_run"
-            results.append({"task_id": task_id, "status": "dry_run"})
-            logging.getLogger().removeHandler(task_handler)
-            continue
+            logger.info(f"\n{'─' * 50}")
+            logger.info(f"Task {task_id}: {task['description']}")
+            logger.info(f"Repo: {repo_name} | Branch: {repo_branch}")
+            logger.info(f"{'─' * 50}")
 
-        # Mark in progress
-        task["status"] = "in_progress"
-        save_checklist(checklist, args.checklist)
+            if args.dry_run:
+                task["status"] = "dry_run"
+                repo_results.append({"task_id": task_id, "status": "dry_run", "repo": repo_name})
+                logging.getLogger().removeHandler(task_handler)
+                continue
 
-        # Execute
-        executor = TaskExecutor(llm, git, config, branch_name)
-        try:
-            result = executor.execute(task)
-        except BudgetExceededError as e:
-            logger.error(f"Budget exceeded — stopping run: {e}")
-            task["status"] = "budget_exceeded"
+            task["status"] = "in_progress"
             save_checklist(checklist, args.checklist)
-            break
 
-        # Update checklist
-        task["status"] = result["status"]
-        task["branch"] = result.get("branch")
-        task["log_file"] = f"logs/task_{task_id}.log"
-        save_checklist(checklist, args.checklist)
+            executor = TaskExecutor(repo_llm, repo_git, config, repo_branch)
+            try:
+                result = executor.execute(task)
+            except BudgetExceededError as e:
+                logger.error(f"Budget exceeded — stopping repo {repo_name}: {e}")
+                task["status"] = "budget_exceeded"
+                save_checklist(checklist, args.checklist)
+                break
 
-        results.append(result)
-        
-        # Track if task was committed
-        if result.get("committed", False):
-            repos_with_commits.add(repo_name)
+            task["status"] = result["status"]
+            task["branch"] = result.get("branch")
+            task["log_file"] = f"logs/task_{task_id}.log"
+            save_checklist(checklist, args.checklist)
 
-        # Remove per-task handler
-        logging.getLogger().removeHandler(task_handler)
-        task_handler.close()
+            result["repo"] = repo_name
+            repo_results.append(result)
+
+            if result.get("committed", False):
+                repos_with_commits.add(repo_name)
+
+            logging.getLogger().removeHandler(task_handler)
+            task_handler.close()
+
+        return repo_results
+
+    if len(repo_tasks) == 1:
+        # Single repo — run serially (no thread overhead)
+        for tasks in repo_tasks.values():
+            results = run_repo_tasks(list(repo_tasks.keys())[0], tasks)
+    else:
+        # Multiple repos — run in parallel
+        logger.info(f"Running {len(repo_tasks)} repos in parallel")
+        with ThreadPoolExecutor(max_workers=len(repo_tasks)) as pool:
+            futures = {
+                pool.submit(run_repo_tasks, repo_name, tasks): repo_name
+                for repo_name, tasks in repo_tasks.items()
+            }
+            for future in as_completed(futures):
+                repo_name = futures[future]
+                try:
+                    repo_results = future.result()
+                    results.extend(repo_results)
+                    logger.info(f"Repo '{repo_name}' completed — {len(repo_results)} tasks")
+                except Exception as e:
+                    logger.exception(f"Repo '{repo_name}' failed: {e}")
+
+    # Sort results by original task order
+    task_order = {t["id"]: i for i, t in enumerate(pending)}
+    results.sort(key=lambda r: task_order.get(r.get("task_id", 0), 0))
 
     # Create pull requests for repos with committed tasks
     pr_urls = {}
@@ -453,7 +485,7 @@ def run(args):
             else:
                 logger.warning(f"Could not parse GitHub URL for {repo_name}: {git.url}")
     
-    # Summary
+    # Summary (usage is per-repo now; use the initial llm for aggregate tracking)
     _print_summary(results, llm)
 
     # Save results JSON
@@ -464,7 +496,6 @@ def run(args):
     
     # Generate run report
     try:
-        # Prepare usage stats object with required attributes
         class UsageStatsWrapper:
             def __init__(self, usage):
                 self.input_tokens = usage.prompt_tokens
