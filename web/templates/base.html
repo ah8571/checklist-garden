@@ -7,6 +7,52 @@
     <link rel="icon" type="image/svg+xml" href="/public/favicon.svg">
     <link rel="icon" type="image/png" href="/public/favicon.png">
     <style>
+        :root {
+            --body-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #1a202c;
+            --nav-bg: #ffffff;
+            --nav-border: #e2e8f0;
+            --card-border: #e2e8f0;
+            --code-bg: #edf2f7;
+            --code-color: #2d3748;
+            --link-color: #3182ce;
+            --link-hover: #2b6cb0;
+            --footer-bg: #f8f9fa;
+            --footer-text: #a0aec0;
+            --footer-border: #e2e8f0;
+            --hamburger-color: #1a202c;
+            --hamburger-hover: #3182ce;
+            --nav-link-color: #1a202c;
+            --nav-link-hover: #3182ce;
+            --nav-links-bg: #ffffff;
+            --nav-links-border: #e2e8f0;
+            --nav-links-link-border: #e2e8f0;
+            --error-color: #e94560;
+        }
+        [data-theme="dark"] {
+            --body-bg: #1a1a2e;
+            --card-bg: #16213e;
+            --text-color: #eee;
+            --nav-bg: #16213e;
+            --nav-border: #0f3460;
+            --card-border: #0f3460;
+            --code-bg: #0f3460;
+            --code-color: #eee;
+            --link-color: #64b5f6;
+            --link-hover: #90caf9;
+            --footer-bg: #16213e;
+            --footer-text: #a0aec0;
+            --footer-border: #0f3460;
+            --hamburger-color: #eee;
+            --hamburger-hover: #64b5f6;
+            --nav-link-color: #eee;
+            --nav-link-hover: #64b5f6;
+            --nav-links-bg: #16213e;
+            --nav-links-border: #0f3460;
+            --nav-links-link-border: #0f3460;
+            --error-color: #ff6b6b;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -14,10 +60,11 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background-color: #f8f9fa;
-            color: #1a202c;
+            background-color: var(--body-bg);
+            color: var(--text-color);
             line-height: 1.6;
             min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
         }
         .container {
             max-width: 1200px;
@@ -25,9 +72,10 @@
             padding: 0 20px;
         }
         nav {
-            background-color: #ffffff;
+            background-color: var(--nav-bg);
             padding: 1rem 0;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--nav-border);
+            transition: background-color 0.3s, border-color 0.3s;
         }
         .nav-container {
             display: flex;
@@ -40,11 +88,11 @@
             gap: 0.6rem;
             font-size: 1.5rem;
             font-weight: bold;
-            color: #1a202c;
+            color: var(--text-color);
             text-decoration: none;
         }
         .nav-title:hover {
-            color: #3182ce;
+            color: var(--link-color);
         }
         .nav-links {
             display: flex;
@@ -52,53 +100,56 @@
             align-items: center;
         }
         .nav-links a {
-            color: #1a202c;
+            color: var(--nav-link-color);
             text-decoration: none;
             transition: color 0.2s;
         }
         .nav-links a:hover {
-            color: #3182ce;
+            color: var(--nav-link-hover);
         }
         main {
             padding: 2rem 0;
         }
         .card {
-            background-color: #ffffff;
+            background-color: var(--card-bg);
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--card-border);
+            transition: background-color 0.3s, border-color 0.3s;
         }
         code, pre {
             font-family: 'Courier New', Courier, monospace;
-            background-color: #edf2f7;
+            background-color: var(--code-bg);
             padding: 0.2rem 0.4rem;
             border-radius: 4px;
             font-size: 0.9em;
-            color: #2d3748;
+            color: var(--code-color);
+            transition: background-color 0.3s, color 0.3s;
         }
         pre {
             padding: 1rem;
             overflow-x: auto;
         }
         a {
-            color: #3182ce;
+            color: var(--link-color);
             text-decoration: none;
         }
         a:hover {
-            color: #2b6cb0;
+            color: var(--link-hover);
         }
         .error {
-            color: #e94560;
+            color: var(--error-color);
         }
         footer {
             text-align: center;
             padding: 1.5rem 0;
-            color: #a0aec0;
+            color: var(--footer-text);
             font-size: 0.9rem;
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid var(--footer-border);
             margin-top: 2rem;
-            background-color: #f8f9fa;
+            background-color: var(--footer-bg);
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
         }
         .hamburger {
             display: none;
@@ -113,12 +164,25 @@
             display: block;
             width: 24px;
             height: 2px;
-            background-color: #1a202c;
+            background-color: var(--hamburger-color);
             border-radius: 2px;
             transition: background-color 0.2s;
         }
         .hamburger:hover span {
-            background-color: #3182ce;
+            background-color: var(--hamburger-hover);
+        }
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3rem;
+            line-height: 1;
+            padding: 0 0.2rem;
+            color: var(--text-color);
+            transition: color 0.2s;
+        }
+        .theme-toggle:hover {
+            color: var(--link-color);
         }
         @media (max-width: 768px) {
             .hamburger {
@@ -131,8 +195,8 @@
                 position: absolute;
                 top: 100%;
                 right: 0;
-                background-color: #ffffff;
-                border: 1px solid #e2e8f0;
+                background-color: var(--nav-links-bg);
+                border: 1px solid var(--nav-links-border);
                 border-top: none;
                 min-width: 160px;
                 z-index: 100;
@@ -142,8 +206,8 @@
             }
             .nav-links a {
                 padding: 0.75rem 1.25rem;
-                border-bottom: 1px solid #e2e8f0;
-                color: #1a202c;
+                border-bottom: 1px solid var(--nav-links-link-border);
+                color: var(--nav-link-color);
             }
             .nav-links a:last-child {
                 border-bottom: none;
@@ -168,6 +232,9 @@
                 {% if user_email is defined and user_email %}
                 <a href="/logout">Logout</a>
                 {% endif %}
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                    <span id="themeIcon">☀️</span>
+                </button>
             </div>
         </div>
     </nav>
@@ -192,6 +259,35 @@
         // Close menu when a link is clicked
         navLinks.querySelectorAll('a').forEach(a => {
             a.addEventListener('click', () => navLinks.classList.remove('open'));
+        });
+
+        // Dark mode toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '🌙';
+            } else {
+                body.removeAttribute('data-theme');
+                themeIcon.textContent = '☀️';
+            }
+            localStorage.setItem('theme', theme);
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            setTheme(savedTheme);
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            setTheme('dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const current = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            setTheme(current);
         });
     </script>
 </body>

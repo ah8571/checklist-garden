@@ -10,7 +10,9 @@ tasks:
     to /api/runs/{run_id}/report. Return the markdown content as plain text.'
   id: 1
   repo: checklist-garden
-  status: in_progress
+  status: failed
+  branch: agent/overnight-2026-07-15-004326
+  log_file: logs/task_1.log
 - context_files:
   - web/templates/base.html
   description: 'Add a dark mode toggle to web/templates/base.html. Add a small sun/moon
@@ -21,7 +23,7 @@ tasks:
     [data-theme="dark"] to make the toggle clean. Keep all Jinja2 blocks unchanged.'
   id: 2
   repo: checklist-garden
-  status: pending
+  status: in_progress
 - context_files:
   - agent/process.py
   description: Modify agent/process.py RunManager.get_status to automatically mark
