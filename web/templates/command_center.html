@@ -93,10 +93,21 @@
         <tbody>
             {% for run in active_runs %}
             <tr style="border-bottom: 1px solid #0f3460;">
-                <td style="padding: 0.75rem 0.5rem;">{{ run.run_id }}</td>
-                <td style="padding: 0.75rem 0.5rem;">{{ run.repo }}</td>
-                <td style="padding: 0.75rem 0.5rem;">{{ run.status }}</td>
-                <td style="padding: 0.75rem 0.5rem;">{{ run.started_at }}</td>
+                <td colspan="4" style="padding: 0;">
+                    <details style="width: 100%;">
+                        <summary style="display: flex; align-items: center; padding: 0.75rem 0.5rem; cursor: pointer; list-style: none;">
+                            <span style="flex: 1;">{{ run.run_id }}</span>
+                            <span style="flex: 1;">{{ run.repo }}</span>
+                            <span style="flex: 1;">{{ run.status }}</span>
+                            <span style="flex: 1;">{{ run.started_at }}</span>
+                            <span class="cc-chevron" style="margin-left: 0.5rem; transition: transform 0.2s ease;">▼</span>
+                        </summary>
+                        <div style="padding: 0.75rem 0.5rem; background-color: #f7fafc; border-top: 1px solid #e2e8f0;">
+                            <a href="/run/{{ run.run_id }}/logs" style="margin-right: 1rem;">View Log</a>
+                            <a href="/run/{{ run.run_id }}/report">View Report</a>
+                        </div>
+                    </details>
+                </td>
             </tr>
             {% else %}
             <tr>
