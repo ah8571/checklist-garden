@@ -40,14 +40,11 @@
 
 <h1 style="color: #1a202c;">Command Center</h1>
 
-<!-- ── Launch New Run (open by default) ── -->
-<details class="cc-card" open>
-    <summary class="cc-header">
-        <h2>Launch New Run</h2>
-        <svg class="cc-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 7.5L10 12.5L15 7.5" stroke="#eee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </summary>
+<!-- ── Launch New Run ── -->
+<div class="cc-card">
+    <div class="cc-header">
+        <h2>What should the agent work on</h2>
+    </div>
     <div class="cc-body">
     <form id="launchForm">
         <div style="margin-bottom: 1rem;">
@@ -59,163 +56,38 @@
             </select>
         </div>
         <div style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem;">Task Descriptions</label>
-            <div class="tab-buttons" style="display: flex; margin-bottom: 0.5rem; align-items: center;">
-                <button type="button" class="tab-button active" data-tab="quick" style="flex: 1; background-color: #e94560; color: white; border: none; padding: 0.75rem; cursor: pointer; border-radius: 4px 4px 0 0; font-weight: bold;">Quick</button>
-                <button type="button" class="tab-button" data-tab="markdown" style="flex: 1; background-color: #0f3460; color: white; border: none; padding: 0.75rem; cursor: pointer; border-radius: 4px 4px 0 0; font-weight: bold;">Markdown</button>
-                <button type="button" class="tab-button" data-tab="yaml" style="flex: 1; background-color: #0f3460; color: white; border: none; padding: 0.75rem; cursor: pointer; border-radius: 4px 4px 0 0; font-weight: bold;">YAML</button>
-                <a href="/command-center/help" style="margin-left: 1rem; font-size: 0.875rem; color: #e94560; text-decoration: none; white-space: nowrap;">Format Help</a>
-            </div>
-            <div class="tab-panel" id="quick-panel" style="display: block;">
-                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                    <input type="text" id="taskInput" placeholder="Describe a task…"
-                           style="flex: 1; padding: 0.75rem; background-color: #16213e; color: #eee;
-                                  border: 1px solid #0f3460; border-radius: 4px; font-size: 1rem;"
-                           onkeydown="if(event.key==='Enter'){event.preventDefault();addTask();}">
-                    <button type="button" onclick="addTask()"
-                            style="background-color: #e94560; color: white; border: none;
-                                   padding: 0.75rem 1.25rem; border-radius: 4px; cursor: pointer;
-                                   font-size: 1.3rem; font-weight: bold; line-height: 1;">+</button>
-                </div>
-                <ul id="taskBuilderList" style="list-style: none; padding: 0; margin: 0 0 0.5rem 0; min-height: 4rem;"></ul>
-                <p id="taskBuilderEmpty" style="color: #eee; font-size: 0.9rem; margin: 0;">No tasks yet — type above and press + or Enter.</p>
-                <textarea id="quickTextarea" style="display: none;"></textarea>
-            </div>
-            <div class="tab-panel" id="markdown-panel" style="display: none;">
-                <textarea id="markdownTextarea" rows="5" placeholder="## Section Name\n- Task description here\n  - context: file1.py, file2.py\n- Another task\n  - context: web/app.py" style="width: 100%; padding: 0.5rem; background-color: #16213e; color: #eee; border: 1px solid #0f3460; border-radius: 4px; font-family: monospace; min-height: 300px; resize: vertical;"></textarea>
-                <div style="margin-top: 0.5rem; font-size: 0.875rem; color: #eee;">Lines starting with - are tasks. Indent with context: for file hints.</div>
-            </div>
-            <div class="tab-panel" id="yaml-panel" style="display: none;">
-                <textarea id="yamlTextarea" rows="5" placeholder="Paste full checklist YAML here" style="width: 100%; padding: 0.5rem; background-color: #16213e; color: #eee; border: 1px solid #0f3460; border-radius: 4px; font-family: monospace; min-height: 300px; resize: vertical;"></textarea>
-                <div style="margin-top: 0.5rem; font-size: 0.875rem; color: #eee;">Must have a tasks: key with a list of task objects.</div>
-            </div>
-            <input type="hidden" id="activeFormat" name="format" value="quick">
+            <label for="formatSelect" style="display: block; margin-bottom: 0.5rem;">Format</label>
+            <select id="formatSelect" style="width: 100%; padding: 0.5rem; background-color: #0f3460; color: #eee; border: 1px solid #0f3460; border-radius: 4px;">
+                <option value="quick">Quick</option>
+                <option value="markdown">Markdown</option>
+                <option value="yaml">YAML</option>
+            </select>
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <label for="taskTextarea" style="display: block; margin-bottom: 0.5rem;">Task Descriptions</label>
+            <textarea id="taskTextarea" rows="8" placeholder="Describe tasks here..." style="width: 100%; padding: 0.5rem; background-color: #16213e; color: #eee; border: 1px solid #0f3460; border-radius: 4px; font-family: monospace; min-height: 200px; resize: vertical;"></textarea>
         </div>
         <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button type="button" id="previewButton" style="background-color: #0f3460; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Preview</button>
             <button type="submit" style="background-color: #e94560; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Start Run</button>
         </div>
         <div id="formError" style="display: none; margin-top: 1rem; padding: 1rem; background-color: #7f1d1d; color: #fca5a5; border-radius: 4px; border: 1px solid #ef4444;"></div>
     </form>
-    <div id="previewResult" style="display: none; margin-top: 2rem; padding: 1.5rem; background-color: #0f3460; border-radius: 8px; border: 1px solid #16213e;">
-        <h3 style="margin-top: 0; color: #eee;">Preview</h3>
-        <div id="previewError" style="color: #f87171; margin-bottom: 1rem; display: none;"></div>
-        <div id="previewContent">
-            <p id="taskCount" style="color: #eee; margin-bottom: 1rem;"></p>
-            <ul id="taskList" style="list-style-type: none; padding-left: 0; margin-bottom: 1.5rem;"></ul>
-            <button id="confirmLaunch" style="background-color: #10b981; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Confirm & Launch</button>
-        </div>
     </div>
-    </div>
-</details>
+</div>
 
-<!-- ── Upload Checklist (collapsed) ── -->
-<details class="cc-card">
-    <summary class="cc-header">
-        <h2>Upload Checklist</h2>
-        <svg class="cc-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 7.5L10 12.5L15 7.5" stroke="#eee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </summary>
-    <div class="cc-body">
-    <p style="color: #eee; margin-bottom: 1.5rem; font-size: 0.9rem;">Upload a checklist file (.md, .yaml, .yml) to start a run on any repository from your GitHub account.</p>
-    <div style="border: 2px dashed #0f3460; border-radius: 8px; padding: 2rem; text-align: center; margin-bottom: 1.5rem;">
-        <input type="file" id="fileUpload" accept=".md,.yaml,.yml" style="display: none;">
-        <div style="margin-bottom: 1rem;">
-            <label for="uploadRepoSelect" style="display: block; margin-bottom: 0.5rem;">Repository</label>
-            <select id="uploadRepoSelect" style="width: 100%; max-width: 300px; padding: 0.5rem; background-color: #0f3460; color: #eee; border: 1px solid #0f3460; border-radius: 4px;">
-                {% for repo in all_repos %}
-                <option value="{{ repo }}">{{ repo }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <button onclick="document.getElementById('fileUpload').click()" style="background-color: #0f3460; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 1rem;">Choose File</button>
-        <div id="fileName" style="margin-bottom: 1rem; color: #eee;">No file selected</div>
-        <button id="uploadButton" onclick="uploadChecklist()"
-                style="background-color: #e94560; color: white; border: none; padding: 0.75rem 1.5rem;
-                       border-radius: 4px; cursor: pointer; font-weight: bold;">Upload & Start Run</button>
-        <div id="uploadError" style="display: none; margin-top: 1rem; padding: 1rem; background-color: #7f1d1d; color: #fca5a5; border-radius: 4px; border: 1px solid #ef4444;"></div>
+<!-- ── Runs Table ── -->
+<div class="cc-card">
+    <div class="cc-header">
+        <h2>Runs</h2>
     </div>
-    </div>
-</details>
-
-<!-- ── Checklist (collapsed) ── -->
-<details class="cc-card">
-    <summary class="cc-header">
-        <h2>Checklist</h2>
-        <svg class="cc-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 7.5L10 12.5L15 7.5" stroke="#eee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </summary>
-    <div class="cc-body">
-    {% if checklist_error %}
-    <div style="background-color: #7f1d1d; color: #fca5a5; padding: 1rem; border-radius: 4px; margin-bottom: 1rem; border: 1px solid #ef4444;">
-        Invalid YAML — please check your syntax.
-    </div>
-    {% endif %}
-    {% if tasks %}
-    <table style="width: 100%; border-collapse: collapse; margin-top: 0.5rem; margin-bottom: 1.5rem;">
-        <thead>
-            <tr style="border-bottom: 2px solid #0f3460;">
-                <th style="text-align: left; padding: 0.5rem; width: 3rem;">#</th>
-                <th style="text-align: left; padding: 0.5rem; width: 7rem;">Status</th>
-                <th style="text-align: left; padding: 0.5rem;">Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for task in tasks %}
-            <tr style="border-bottom: 1px solid #0f3460;">
-                <td style="padding: 0.5rem;">{{ task.id }}</td>
-                <td style="padding: 0.5rem;">
-                    {% set s = task.status | default('pending') | lower %}
-                    {% if s in ('done', 'completed') %}
-                        <span style="background:#10b981;color:white;padding:0.2rem 0.5rem;border-radius:9999px;font-size:0.8rem;">done</span>
-                    {% elif s == 'failed' %}
-                        <span style="background:#ef4444;color:white;padding:0.2rem 0.5rem;border-radius:9999px;font-size:0.8rem;">failed</span>
-                    {% elif s == 'in_progress' %}
-                        <span style="background:#3b82f6;color:white;padding:0.2rem 0.5rem;border-radius:9999px;font-size:0.8rem;">running</span>
-                    {% else %}
-                        <span style="background:#f59e0b;color:white;padding:0.2rem 0.5rem;border-radius:9999px;font-size:0.8rem;">pending</span>
-                    {% endif %}
-                </td>
-                <td style="padding: 0.5rem;">{{ task.description }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p style="color: #eee; margin-top: 0.5rem; margin-bottom: 1.5rem;">No tasks in checklist yet.</p>
-    {% endif %}
-    <details style="margin-top: 0.5rem;">
-        <summary style="cursor: pointer; color: #e94560; font-weight: bold; padding: 0.5rem 0; user-select: none; list-style: none;">Edit Checklist YAML &#9662;</summary>
-        <form method="post" action="/checklist/save" style="margin-top: 1rem;">
-            <textarea name="tasks_yaml" style="width:100%;min-height:250px;background-color:#16213e;color:#eee;font-family:monospace;padding:0.75rem;border:1px solid #0f3460;border-radius:4px;resize:vertical;">{{ checklist_raw }}</textarea>
-            <div style="margin-top: 0.75rem;">
-                <button type="submit" style="background-color:#e94560;color:white;padding:0.5rem 1rem;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">Save Checklist</button>
-            </div>
-        </form>
-    </details>
-    </div>
-</details>
-
-<!-- ── Active Runs (collapsed) ── -->
-<details class="cc-card">
-    <summary class="cc-header">
-        <h2>Active Runs</h2>
-        <svg class="cc-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 7.5L10 12.5L15 7.5" stroke="#eee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </summary>
     <div class="cc-body">
     <table style="width: 100%; border-collapse: collapse; margin-top: 0.5rem;">
         <thead>
             <tr style="border-bottom: 2px solid #0f3460;">
                 <th style="text-align: left; padding: 0.75rem 0.5rem;">Run ID</th>
                 <th style="text-align: left; padding: 0.75rem 0.5rem;">Repo</th>
-                <th style="text-align: left; padding: 0.75rem 0.5rem;">Started</th>
                 <th style="text-align: left; padding: 0.75rem 0.5rem;">Status</th>
-                <th style="text-align: left; padding: 0.75rem 0.5rem;">Progress</th>
-                <th style="text-align: left; padding: 0.75rem 0.5rem;">Actions</th>
+                <th style="text-align: left; padding: 0.75rem 0.5rem;">Started At</th>
             </tr>
         </thead>
         <tbody>
@@ -223,116 +95,25 @@
             <tr style="border-bottom: 1px solid #0f3460;">
                 <td style="padding: 0.75rem 0.5rem;">{{ run.run_id }}</td>
                 <td style="padding: 0.75rem 0.5rem;">{{ run.repo }}</td>
-                <td style="padding: 0.75rem 0.5rem;">{{ run.started }}</td>
                 <td style="padding: 0.75rem 0.5rem;">{{ run.status }}</td>
-                <td style="padding: 0.75rem 0.5rem;">{{ run.progress }}</td>
-                <td style="padding: 0.75rem 0.5rem;">
-                    <button onclick="stopRun('{{ run.run_id }}')" style="background-color: #dc2626; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-right: 0.5rem;">Stop</button>
-                    <a href="/command-center/{{ run.run_id }}/logs" style="color: #eee; text-decoration: none;">Logs</a>
-                </td>
+                <td style="padding: 0.75rem 0.5rem;">{{ run.started_at }}</td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="6" style="padding: 1rem; text-align: center; color: #eee;">No active runs</td>
+                <td colspan="4" style="padding: 1rem; text-align: center; color: #eee;">No runs yet</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     </div>
-</details>
-
-<!-- ── Run History (collapsed) ── -->
-<details class="cc-card">
-    <summary class="cc-header">
-        <h2>Run History</h2>
-        <svg class="cc-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 7.5L10 12.5L15 7.5" stroke="#eee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </summary>
-    <div class="cc-body">
-    {% if log_files %}
-    <ul style="list-style: none; padding: 0; margin-top: 0.5rem;">
-        {% for file in log_files %}
-        <li style="padding: 0.6rem 0; border-bottom: 1px solid #0f3460; display: flex; justify-content: space-between; align-items: center;">
-            <a href="/runs/{{ file.filename }}" style="color: #e94560;">{{ file.display_name }}</a>
-            <span style="color: #eee; font-size: 0.875rem;">{{ file.timestamp }}</span>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p style="color: #eee; margin-top: 0.5rem;">No run logs yet.</p>
-    {% endif %}
-    </div>
-</details>
+</div>
 
 <script>
-    // Task builder (Quick tab)
-    const taskBuilderItems = [];
-
-    function renderTaskList() {
-        const list = document.getElementById('taskBuilderList');
-        const empty = document.getElementById('taskBuilderEmpty');
-        list.innerHTML = '';
-        taskBuilderItems.forEach((text, i) => {
-            const li = document.createElement('li');
-            li.style.cssText = 'display:flex;align-items:center;gap:0.5rem;background:#16213e;border-radius:4px;padding:0.6rem 0.75rem;margin-bottom:0.5rem;';
-            li.innerHTML = `
-                <span style="flex:1;color:#eee;">${i + 1}. ${text}</span>
-                <button type="button" onclick="removeTask(${i})"
-                        style="background:none;border:none;color:#e94560;cursor:pointer;font-size:1.1rem;line-height:1;padding:0 0.25rem;"
-                        title="Remove">&times;</button>`;
-            list.appendChild(li);
-        });
-        empty.style.display = taskBuilderItems.length === 0 ? 'block' : 'none';
-        document.getElementById('quickTextarea').value = taskBuilderItems.join('\n');
-    }
-
-    function addTask() {
-        const input = document.getElementById('taskInput');
-        const text = input.value.trim();
-        if (!text) return;
-        taskBuilderItems.push(text);
-        input.value = '';
-        input.focus();
-        renderTaskList();
-    }
-
-    function removeTask(index) {
-        taskBuilderItems.splice(index, 1);
-        renderTaskList();
-    }
-
-    // Tab switching
-    document.querySelectorAll('.tab-button').forEach(button => {
-        button.addEventListener('click', () => {
-            const tab = button.dataset.tab;
-            // Update active button styles
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.style.backgroundColor = '#0f3460';
-            });
-            button.style.backgroundColor = '#e94560';
-            // Show corresponding panel
-            document.querySelectorAll('.tab-panel').forEach(panel => {
-                panel.style.display = 'none';
-            });
-            document.getElementById(`${tab}-panel`).style.display = 'block';
-            // Update hidden format field
-            document.getElementById('activeFormat').value = tab;
-        });
-    });
-    
     document.getElementById('launchForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const repo = document.getElementById('repoSelect').value;
-        const format = document.getElementById('activeFormat').value;
-        let inputText = '';
-        if (format === 'quick') {
-            inputText = document.getElementById('quickTextarea').value;
-        } else if (format === 'markdown') {
-            inputText = document.getElementById('markdownTextarea').value;
-        } else if (format === 'yaml') {
-            inputText = document.getElementById('yamlTextarea').value;
-        }
+        const format = document.getElementById('formatSelect').value;
+        const inputText = document.getElementById('taskTextarea').value;
         
         const formError = document.getElementById('formError');
         formError.style.display = 'none';
@@ -351,7 +132,6 @@
                 alert(`Run started with ID: ${data.run_id}`);
                 location.reload();
             } else {
-                // Try to parse JSON error
                 try {
                     const errorData = await response.json();
                     formError.textContent = `Error: ${errorData.error}`;
@@ -366,168 +146,5 @@
             formError.style.display = 'block';
         }
     });
-    
-    // Preview button handling
-    document.getElementById('previewButton').addEventListener('click', async () => {
-        const repo = document.getElementById('repoSelect').value;
-        const format = document.getElementById('activeFormat').value;
-        let inputText = '';
-        if (format === 'quick') {
-            inputText = document.getElementById('quickTextarea').value;
-        } else if (format === 'markdown') {
-            inputText = document.getElementById('markdownTextarea').value;
-        } else if (format === 'yaml') {
-            inputText = document.getElementById('yamlTextarea').value;
-        }
-        
-        const previewResult = document.getElementById('previewResult');
-        const previewError = document.getElementById('previewError');
-        const previewContent = document.getElementById('previewContent');
-        const taskCount = document.getElementById('taskCount');
-        const taskList = document.getElementById('taskList');
-        const confirmLaunch = document.getElementById('confirmLaunch');
-        
-        previewResult.style.display = 'block';
-        previewError.style.display = 'none';
-        previewContent.style.display = 'none';
-        
-        try {
-            const response = await fetch('/api/runs/preview', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ repo, format, input_text: inputText })
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                taskCount.textContent = `${data.count} tasks parsed`;
-                taskList.innerHTML = '';
-                data.tasks.forEach(task => {
-                    const li = document.createElement('li');
-                    li.style.marginBottom = '1rem';
-                    li.style.padding = '0.75rem';
-                    li.style.backgroundColor = '#16213e';
-                    li.style.borderRadius = '4px';
-                    
-                    const desc = task.description || '';
-                    const truncated = desc.length > 100 ? desc.substring(0, 100) + '...' : desc;
-                    const context = task.context_files || [];
-                    const contextText = context.length > 0 ? `Context files: ${context.join(', ')}` : 'No context files';
-                    
-                    li.innerHTML = `
-                        <div style="color: #eee; margin-bottom: 0.25rem;">${truncated}</div>
-                        <div style="color: #eee; font-size: 0.875rem;">${contextText}</div>
-                    `;
-                    taskList.appendChild(li);
-                });
-                previewContent.style.display = 'block';
-                
-                // Set up confirm button
-                confirmLaunch.onclick = () => {
-                    // Reuse the same data to start the run
-                    fetch('/api/runs/start', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ repo, format, input_text: inputText })
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            return response.json();
-                        } else {
-                            return response.text().then(text => { throw new Error(text); });
-                        }
-                    })
-                    .then(data => {
-                        alert(`Run started with ID: ${data.run_id}`);
-                        location.reload();
-                    })
-                    .catch(err => {
-                        alert(`Error: ${err.message}`);
-                    });
-                };
-            } else {
-                // Try to parse JSON error
-                try {
-                    const errorData = await response.json();
-                    previewError.textContent = `Error: ${errorData.error}`;
-                } catch {
-                    const errorText = await response.text();
-                    previewError.textContent = `Error: ${errorText}`;
-                }
-                previewError.style.display = 'block';
-            }
-        } catch (err) {
-            previewError.textContent = `Network error: ${err.message}`;
-            previewError.style.display = 'block';
-        }
-    });
-    
-    async function stopRun(runId) {
-        if (!confirm('Are you sure you want to stop this run?')) return;
-        
-        try {
-            const response = await fetch(`/api/runs/${runId}/stop`, {
-                method: 'POST'
-            });
-            
-            if (response.ok) {
-                alert('Run stopped');
-                location.reload();
-            } else {
-                const error = await response.text();
-                alert(`Error: ${error}`);
-            }
-        } catch (err) {
-            alert(`Network error: ${err.message}`);
-        }
-    }
-    
-    // File upload handling
-    const fileInput = document.getElementById('fileUpload');
-    const fileNameDisplay = document.getElementById('fileName');
-
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length > 0) {
-            fileNameDisplay.textContent = fileInput.files[0].name + ' — click Upload & Start Run';
-        } else {
-            fileNameDisplay.textContent = 'No file selected';
-        }
-    });
-
-    async function uploadChecklist() {
-        const repo = document.getElementById('uploadRepoSelect').value;
-        const file = fileInput.files[0];
-        const uploadError = document.getElementById('uploadError');
-        uploadError.style.display = 'none';
-
-        if (!file) {
-            uploadError.textContent = 'Please select a file to upload.';
-            uploadError.style.display = 'block';
-            return;
-        }
-
-        try {
-            const formData = new FormData();
-            formData.append('repo', repo);
-            formData.append('file', file);
-            const response = await fetch('/api/runs/upload', { method: 'POST', body: formData });
-            if (response.ok) {
-                const data = await response.json();
-                alert(`Run started: ${data.run_id}`);
-                location.reload();
-            } else {
-                const err = await response.json().catch(() => ({}));
-                uploadError.textContent = `Error: ${err.detail || err.error || 'Upload failed'}`;
-                uploadError.style.display = 'block';
-            }
-        } catch (err) {
-            uploadError.textContent = `Network error: ${err.message}`;
-            uploadError.style.display = 'block';
-        }
-    }
 </script>
 {% endblock %}

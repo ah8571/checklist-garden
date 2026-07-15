@@ -12,9 +12,18 @@
     "pid": 20805,
     "repo": "checklist-garden",
     "started_at": "2026-07-14T22:18:20.230027+00:00",
-    "status": "running",
+    "status": "finished",
     "log_file": "runs/checklist-garden-20260714-221820/output.log",
     "checklist_file": "runs/checklist-garden-20260714-221820/checklist.yaml",
+    "config_path": "config.yaml"
+  },
+  "checklist-garden-20260715-000012": {
+    "pid": 28448,
+    "repo": "checklist-garden",
+    "started_at": "2026-07-15T00:00:12.416016+00:00",
+    "status": "running",
+    "log_file": "runs/checklist-garden-20260715-000012/output.log",
+    "checklist_file": "runs/checklist-garden-20260715-000012/checklist.yaml",
     "config_path": "config.yaml"
   }
 }
