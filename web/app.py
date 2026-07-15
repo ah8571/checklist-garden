@@ -743,6 +743,48 @@ async def cleanup_runs(
     })
 
 
+@app.delete("/api/runs/{run_id}")
+async def delete_run(
+    run_id: str,
+    user_email: str = Depends(get_current_user)
+):
+    """Delete a run from the registry and its files."""
+    if '..' in run_id or '/' in run_id or '\\' in run_id:
+        raise HTTPException(status_code=400, detail="Invalid run ID")
+
+    manager = RunManager()
+    try:
+        status = manager.get_status(run_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Run not found")
+
+    # Try to stop if still running
+    if status.get("status") == "running":
+        try:
+            manager.stop_run(run_id)
+        except Exception:
+            pass
+
+    # Remove from registry and delete run directory
+    import shutil
+    run_dir = Path("runs") / run_id
+    deleted_files = 0
+    if run_dir.exists():
+        deleted_files = sum(1 for _ in run_dir.rglob("*"))
+        shutil.rmtree(run_dir)
+
+    # Remove from registry
+    if run_id in manager.registry:
+        del manager.registry[run_id]
+        manager._save_registry()
+
+    return JSONResponse(content={
+        "run_id": run_id,
+        "status": "deleted",
+        "files_removed": deleted_files
+    })
+
+
 @app.get("/api/runs/{run_id}/report")
 async def get_run_report(
     run_id: str,
