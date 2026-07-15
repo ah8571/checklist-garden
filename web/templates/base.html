@@ -66,23 +66,32 @@
             min-height: 100vh;
             transition: background-color 0.3s, color 0.3s;
         }
-        /* Garden plot background — subtle grid */
+        /* Garden plot background — grid revealed in scattered plots */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
             z-index: -1;
             pointer-events: none;
-            opacity: 0.35;
             background-image:
                 linear-gradient(var(--card-border) 1px, transparent 1px),
                 linear-gradient(90deg, var(--card-border) 1px, transparent 1px);
-            background-size: 40px 40px;
+            background-size: 48px 48px;
             background-position: -1px -1px;
+            -webkit-mask-image:
+                radial-gradient(circle 180px at 18% 22%,  black 40%, transparent 100%),
+                radial-gradient(circle 140px at 55% 12%,  black 40%, transparent 100%),
+                radial-gradient(circle 200px at 78% 35%,  black 40%, transparent 100%),
+                radial-gradient(circle 160px at 32% 58%,  black 40%, transparent 100%),
+                radial-gradient(circle 130px at 68% 68%,  black 40%, transparent 100%),
+                radial-gradient(circle 170px at 85% 82%,  black 40%, transparent 100%),
+                radial-gradient(circle 150px at 12% 90%,  black 40%, transparent 100%);
+            -webkit-mask-composite: source-in;
+            mask-composite: intersect;
             transition: opacity 0.3s;
         }
         [data-theme="dark"] body::before {
-            opacity: 0.12;
+            opacity: 0.6;
         }
         .container {
             max-width: 1200px;
