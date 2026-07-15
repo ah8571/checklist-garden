@@ -11,30 +11,117 @@
         border: 1px solid #e2e8f0;
         overflow: hidden;
     }
-    .cc-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1.25rem 1.5rem;
-        cursor: pointer;
-        user-select: none;
-        list-style: none;
+    .cc-body {
+        padding: 1.5rem;
     }
-    .cc-header::-webkit-details-marker { display: none; }
-    .cc-header h2 {
-        margin: 0;
+    .cc-body h2 {
+        margin: 0 0 1rem 0;
         font-size: 1.2rem;
         color: #1a202c;
     }
-    .cc-chevron {
-        transition: transform 0.2s ease;
-        flex-shrink: 0;
+    .btn-primary {
+        background-color: #e94560;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 1rem;
     }
-    details[open] > .cc-header .cc-chevron {
-        transform: rotate(180deg);
+    .btn-primary:hover {
+        background-color: #d63851;
     }
-    .cc-body {
-        padding: 0 1.5rem 1.5rem 1.5rem;
+    .btn-secondary {
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+    .btn-secondary:hover {
+        background-color: #1d4ed8;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #1a202c;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        background-color: #16213e;
+        color: #eee;
+        border: 1px solid #0f3460;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #e94560;
+    }
+    .form-select {
+        width: 100%;
+        padding: 0.5rem;
+        background-color: #0f3460;
+        color: #eee;
+        border: 1px solid #0f3460;
+        border-radius: 4px;
+    }
+    .form-select:focus {
+        outline: none;
+        border-color: #e94560;
+    }
+    .runs-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.5rem;
+    }
+    .runs-table th {
+        text-align: left;
+        padding: 0.75rem 0.5rem;
+        border-bottom: 2px solid #0f3460;
+        color: #1a202c;
+    }
+    .runs-table td {
+        padding: 0.75rem 0.5rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .runs-table tr:hover {
+        background-color: #f7fafc;
+    }
+    .runs-table a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+    .runs-table a:hover {
+        text-decoration: underline;
+    }
+    .no-runs {
+        padding: 1rem;
+        text-align: center;
+        color: #718096;
+    }
+    .error-box {
+        display: none;
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #7f1d1d;
+        color: #fca5a5;
+        border-radius: 4px;
+        border: 1px solid #ef4444;
+    }
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
     }
 </style>
 
@@ -42,81 +129,66 @@
 
 <!-- ── Launch New Run ── -->
 <div class="cc-card">
-    <div class="cc-header">
-        <h2>What should the agent work on</h2>
-    </div>
     <div class="cc-body">
-    <form id="launchForm">
-        <div style="margin-bottom: 1rem;">
-            <label for="repoSelect" style="display: block; margin-bottom: 0.5rem;">Repository</label>
-            <select id="repoSelect" style="width: 100%; padding: 0.5rem; background-color: #0f3460; color: #eee; border: 1px solid #0f3460; border-radius: 4px;">
-                {% for repo in repos %}
-                <option value="{{ repo }}">{{ repo }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div style="margin-bottom: 1rem;">
-            <label for="formatSelect" style="display: block; margin-bottom: 0.5rem;">Format</label>
-            <select id="formatSelect" style="width: 100%; padding: 0.5rem; background-color: #0f3460; color: #eee; border: 1px solid #0f3460; border-radius: 4px;">
-                <option value="quick">Quick</option>
-                <option value="markdown">Markdown</option>
-                <option value="yaml">YAML</option>
-            </select>
-        </div>
-        <div style="margin-bottom: 1rem;">
-            <label for="taskTextarea" style="display: block; margin-bottom: 0.5rem;">Task Descriptions</label>
-            <textarea id="taskTextarea" rows="8" placeholder="Describe tasks here..." style="width: 100%; padding: 0.5rem; background-color: #16213e; color: #eee; border: 1px solid #0f3460; border-radius: 4px; font-family: monospace; min-height: 200px; resize: vertical;"></textarea>
-        </div>
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button type="submit" style="background-color: #e94560; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Start Run</button>
-            <button type="button" id="cleanupBtn" style="background-color: #2563eb; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Cleanup Dead Runs</button>
-        </div>
-        <div id="formError" style="display: none; margin-top: 1rem; padding: 1rem; background-color: #7f1d1d; color: #fca5a5; border-radius: 4px; border: 1px solid #ef4444;"></div>
-    </form>
+        <h2>What should the agent work on?</h2>
+        <form id="launchForm">
+            <div class="form-group">
+                <label for="repoSelect">Repository</label>
+                <select id="repoSelect" class="form-select">
+                    {% for repo in repos %}
+                    <option value="{{ repo }}">{{ repo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="formatSelect">Format</label>
+                <select id="formatSelect" class="form-select">
+                    <option value="quick">Quick</option>
+                    <option value="markdown">Markdown</option>
+                    <option value="yaml">YAML</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="taskTextarea">Task Descriptions</label>
+                <textarea id="taskTextarea" rows="8" placeholder="Describe tasks here..." class="form-control" style="min-height: 200px; resize: vertical;"></textarea>
+            </div>
+            <div class="button-group">
+                <button type="submit" class="btn-primary">Start Run</button>
+                <button type="button" id="cleanupBtn" class="btn-secondary">Cleanup Dead Runs</button>
+            </div>
+            <div id="formError" class="error-box"></div>
+        </form>
     </div>
 </div>
 
 <!-- ── Runs Table ── -->
 <div class="cc-card">
-    <div class="cc-header">
-        <h2>Runs</h2>
-    </div>
     <div class="cc-body">
-    <table style="width: 100%; border-collapse: collapse; margin-top: 0.5rem;">
-        <thead>
-            <tr style="border-bottom: 2px solid #0f3460;">
-                <th style="text-align: left; padding: 0.75rem 0.5rem;">Run ID</th>
-                <th style="text-align: left; padding: 0.75rem 0.5rem;">Repo</th>
-                <th style="text-align: left; padding: 0.75rem 0.5rem;">Status</th>
-                <th style="text-align: left; padding: 0.75rem 0.5rem;">Started At</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for run in active_runs %}
-            <tr style="border-bottom: 1px solid #0f3460;">
-                <td colspan="4" style="padding: 0;">
-                    <details style="width: 100%;">
-                        <summary style="display: flex; align-items: center; padding: 0.75rem 0.5rem; cursor: pointer; list-style: none;">
-                            <span style="flex: 1;">{{ run.run_id }}</span>
-                            <span style="flex: 1;">{{ run.repo }}</span>
-                            <span style="flex: 1;">{{ run.status }}</span>
-                            <span style="flex: 1;">{{ run.started_at }}</span>
-                            <span class="cc-chevron" style="margin-left: 0.5rem; transition: transform 0.2s ease;">▼</span>
-                        </summary>
-                        <div style="padding: 0.75rem 0.5rem; background-color: #f7fafc; border-top: 1px solid #e2e8f0;">
-                            <a href="/command-center/{{ run.run_id }}/logs" style="margin-right: 1rem;">View Log</a>
-                            <a href="/api/runs/{{ run.run_id }}/report" target="_blank">View Report</a>
-                        </div>
-                    </details>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="4" style="padding: 1rem; text-align: center; color: #eee;">No runs yet</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        <h2>Runs</h2>
+        <table class="runs-table">
+            <thead>
+                <tr>
+                    <th>Run ID</th>
+                    <th>Repo</th>
+                    <th>Status</th>
+                    <th>Started At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for run in active_runs %}
+                <tr>
+                    <td><a href="/command-center/{{ run.run_id }}/logs">{{ run.run_id }}</a></td>
+                    <td>{{ run.repo }}</td>
+                    <td>{{ run.status }}</td>
+                    <td>{{ run.started_at }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="no-runs">No runs yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
