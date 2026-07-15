@@ -3,7 +3,32 @@
 {% block title %}Cookbook — Checklist Garden{% endblock %}
 
 {% block content %}
-<h1>Cookbook</h1>
+<style>
+    .cc-card {
+        background-color: #ffffff;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    .cc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .cc-header h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #1a202c;
+    }
+    .cc-body {
+        padding: 1.5rem;
+    }
+</style>
+
+<h1 style="color: #1a202c;">Cookbook</h1>
 
 {% if error %}
 <div style="padding: 1rem; background-color: #fed7d7; color: #c53030; border-radius: 4px; margin-bottom: 1rem; border: 1px solid #fc8181;">

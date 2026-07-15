@@ -194,10 +194,8 @@ class TaskExecutor:
             if committed:
                 pushed = self.git.push_branch(self.branch_name)
                 if not pushed:
-                    result["error"] = "Push failed"
-                    result["status"] = "failed"
-                    self._finalize(result, self.branch_name, start_time)
-                    return result
+                    logger.warning(f"Task {task_id}: Push failed, but changes committed locally")
+                    result["notes"] = (result.get("notes") or "") + " | Push failed — changes committed locally only"
 
             result["status"] = "done"
 

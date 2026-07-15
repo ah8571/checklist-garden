@@ -519,6 +519,10 @@ def run(args):
             except Exception as e:
                 logger.error(f"Failed to generate diff summary for {repo_name}: {e}")
 
+    # Return all repos to their default branch so the service restarts cleanly
+    for repo_name in needed_repos:
+        repos[repo_name].return_to_main()
+
 
 def _print_summary(results: list[dict], llm: LLMClient):
     """Print a run summary."""

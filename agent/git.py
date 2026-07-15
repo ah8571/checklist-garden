@@ -97,6 +97,7 @@ class GitManager:
         """
         Create the run branch if it doesn't exist yet, or check it out if it does.
         Called once per repo at the start of a run.
+        Returns the branch name on success, raises RuntimeError on failure.
         """
         self._auto_stash()
         result = self._run(["git", "rev-parse", "--verify", branch_name])
@@ -108,7 +109,28 @@ class GitManager:
             self._run(["git", "checkout", self.default_branch])
             self._run(["git", "checkout", "-b", branch_name])
         self._auto_unstash()
+
+        # Verify we're actually on the target branch
+        verify = self._run(["git", "branch", "--show-current"])
+        current = verify.stdout.strip()
+        if current != branch_name:
+            raise RuntimeError(
+                f"[{self.name}] Branch switch failed: expected '{branch_name}', "
+                f"currently on '{current}'. Aborting run."
+            )
         return branch_name
+
+    def return_to_main(self) -> bool:
+        """Return the repo to its default branch, stashing any dirty state."""
+        try:
+            self._auto_stash()
+            self._run(["git", "checkout", self.default_branch])
+            self._auto_unstash()
+            logger.info(f"[{self.name}] Returned to {self.default_branch}")
+            return True
+        except Exception as e:
+            logger.warning(f"[{self.name}] Failed to return to {self.default_branch}: {e}")
+            return False
 
     def _auto_stash(self):
         """Stash any uncommitted changes so branch operations don't fail."""
