@@ -4,11 +4,12 @@
 
 {% block content %}
 <style>
+    /* ── Theme-aware colors (tied to base.html variables) ── */
     .cc-card {
-        background-color: #ffffff;
+        background-color: var(--card-bg);
         border-radius: 8px;
         margin-bottom: 1.5rem;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--card-border);
         overflow: hidden;
     }
     .cc-body {
@@ -17,10 +18,10 @@
     .cc-body h2 {
         margin: 0 0 1rem 0;
         font-size: 1.2rem;
-        color: #1a202c;
+        color: var(--text-color);
     }
     .btn-primary {
-        background-color: #e94560;
+        background-color: var(--error-color);
         color: white;
         border: none;
         padding: 0.75rem 1.5rem;
@@ -29,11 +30,9 @@
         font-weight: bold;
         font-size: 1rem;
     }
-    .btn-primary:hover {
-        background-color: #d63851;
-    }
+    .btn-primary:hover { filter: brightness(0.9); }
     .btn-preview {
-        background-color: #3182ce;
+        background-color: var(--link-color);
         color: white;
         border: none;
         padding: 0.75rem 1.5rem;
@@ -42,22 +41,7 @@
         font-weight: bold;
         font-size: 1rem;
     }
-    .btn-preview:hover {
-        background-color: #2b6cb0;
-    }
-    .btn-secondary {
-        background-color: #38a169;
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 1rem;
-    }
-    .btn-secondary:hover {
-        background-color: #2f855a;
-    }
+    .btn-preview:hover { filter: brightness(0.9); }
     .form-group {
         margin-bottom: 1rem;
     }
@@ -65,32 +49,32 @@
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 600;
-        color: #1a202c;
+        color: var(--text-color);
     }
     .form-control {
         width: 100%;
         padding: 0.5rem;
-        background-color: #edf2f7;
-        color: #1a202c;
-        border: 1px solid #e2e8f0;
+        background-color: var(--code-bg);
+        color: var(--text-color);
+        border: 1px solid var(--card-border);
         border-radius: 4px;
         font-family: monospace;
     }
     .form-control:focus {
         outline: none;
-        border-color: #3182ce;
+        border-color: var(--link-color);
     }
     .form-select {
         width: 100%;
         padding: 0.5rem;
-        background-color: #ffffff;
-        color: #1a202c;
-        border: 1px solid #e2e8f0;
+        background-color: var(--card-bg);
+        color: var(--text-color);
+        border: 1px solid var(--card-border);
         border-radius: 4px;
     }
     .form-select:focus {
         outline: none;
-        border-color: #3182ce;
+        border-color: var(--link-color);
     }
     .runs-table {
         width: 100%;
@@ -100,18 +84,19 @@
     .runs-table th {
         text-align: left;
         padding: 0.75rem 0.5rem;
-        border-bottom: 2px solid #e2e8f0;
-        color: #1a202c;
+        border-bottom: 2px solid var(--card-border);
+        color: var(--text-color);
     }
     .runs-table td {
         padding: 0.75rem 0.5rem;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--card-border);
+        color: var(--text-color);
     }
     .runs-table tr:hover {
-        background-color: #f7fafc;
+        background-color: var(--code-bg);
     }
     .runs-table a {
-        color: #2563eb;
+        color: var(--link-color);
         text-decoration: none;
     }
     .runs-table a:hover {
@@ -120,7 +105,7 @@
     .no-runs {
         padding: 1rem;
         text-align: center;
-        color: #718096;
+        color: var(--footer-text);
     }
     .error-box {
         display: none;
@@ -164,7 +149,7 @@
     }
 </style>
 
-<h1 style="color: #1a202c;">Command Center</h1>
+<h1 style="color: var(--text-color);">Command Center</h1>
 
 <!-- ── Launch New Run ── -->
 <div class="cc-card">
