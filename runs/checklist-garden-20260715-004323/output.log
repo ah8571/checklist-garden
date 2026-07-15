@@ -90,3 +90,31 @@ fatal: Authentication failed for 'https://github.com/ah8571/checklist-garden.git
 00:44:14 │ INFO    │ Applied edit (search/replace): agent/process.py
 00:44:14 │ INFO    │ [checklist-garden] Running tests: /root/agent/.venv/bin/python -m unittest discover tests
 00:44:19 │ INFO    │ [checklist-garden] Tests passed
+00:44:19 │ INFO    │ [checklist-garden] Committed: Auto-mark runs as finished when subprocess is dead in get_status
+00:44:19 │ INFO    │ [checklist-garden] Pushing agent/overnight-2026-07-15-004326
+00:44:19 │ ERROR   │ [checklist-garden] Command failed: remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/ah8571/checklist-garden.git/'
+00:44:19 │ ERROR   │ [checklist-garden] Push failed: remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/ah8571/checklist-garden.git/'
+
+00:44:19 │ INFO    │ Task 3 Γ£ù [failed] in 11.6s ΓÇö branch: agent/overnight-2026-07-15-004326
+00:44:19 │ INFO    │ 
+──────────────────────────────────────────────────
+00:44:19 │ INFO    │ Task 4: Add a /api/runs/cleanup endpoint to web/app.py that iterates all runs in the registry, checks if each running process is actually alive, and marks dead ones as finished. Add a small Cleanup button in the command center that calls this endpoint. Return JSON with counts of how many runs were fixed.
+00:44:19 │ INFO    │ Repo: checklist-garden | Branch: agent/overnight-2026-07-15-004326
+00:44:19 │ INFO    │ ──────────────────────────────────────────────────
+00:44:19 │ INFO    │ Task 4: Starting ΓÇö Add a /api/runs/cleanup endpoint to web/app.py that iterates all runs in the registry, checks if each running process is actually alive, and marks dead ones as finished. Add a small Cleanup button in the command center that calls this endpoint. Return JSON with counts of how many runs were fixed.
+00:44:19 │ INFO    │ [checklist-garden] Installing deps: /root/agent/.venv/bin/pip install -r requirements.txt
+00:44:21 │ INFO    │ Task 4: Sending to LLM
+00:44:21 │ INFO    │ HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+00:44:29 │ INFO    │ DeepSeek response in 7.7s — 9069 in / 1229 out
+00:44:29 │ INFO    │ [checklist-garden] Wrote web/app.py
+00:44:29 │ INFO    │ Applied edit (search/replace): web/app.py
+00:44:29 │ INFO    │ [checklist-garden] Wrote web/app.py
+00:44:29 │ INFO    │ Applied edit (search/replace): web/app.py
+00:44:29 │ INFO    │ [checklist-garden] Wrote web/templates/command_center.html
+00:44:29 │ INFO    │ Applied edit (search/replace): web/templates/command_center.html
+00:44:29 │ INFO    │ [checklist-garden] Wrote web/templates/command_center.html
+00:44:29 │ INFO    │ Applied edit (search/replace): web/templates/command_center.html
+00:44:29 │ INFO    │ [checklist-garden] Running tests: /root/agent/.venv/bin/python -m unittest discover tests
+00:44:33 │ INFO    │ [checklist-garden] Tests passed

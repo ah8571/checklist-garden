@@ -28,6 +28,7 @@ from web.config import (
     AGENT_LOG_DIR
 )
 from agent.process import RunManager
+import signal
 from agent.checklist import parse_markdown, parse_yaml_text
 from web.github_repos import merge_with_config, get_repo_defaults
 
@@ -701,6 +702,45 @@ async def get_run_logs(
             lines = []
     
     return JSONResponse(content={"run_id": run_id, "lines": lines})
+
+
+@app.post("/api/runs/cleanup")
+async def cleanup_runs(
+    user_email: str = Depends(get_current_user)
+):
+    """Check all runs in the registry, mark dead processes as finished."""
+    manager = RunManager()
+    runs = manager.list_runs()
+    fixed_count = 0
+    already_finished_count = 0
+    for run in runs:
+        if run.get("status") in ("running", "started"):
+            pid = run.get("pid")
+            if pid is not None:
+                try:
+                    # Send signal 0 to check if process exists
+                    os.kill(pid, 0)
+                except OSError:
+                    # Process is dead, mark as finished
+                    try:
+                        manager.stop_run(run["run_id"])
+                        fixed_count += 1
+                    except Exception:
+                        pass
+                else:
+                    already_finished_count += 1
+            else:
+                # No PID, mark as finished
+                try:
+                    manager.stop_run(run["run_id"])
+                    fixed_count += 1
+                except Exception:
+                    pass
+    return JSONResponse(content={
+        "fixed": fixed_count,
+        "already_finished": already_finished_count,
+        "total_checked": len(runs)
+    })
 
 
 @app.get("/api/runs/{run_id}/report")

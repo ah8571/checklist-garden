@@ -69,6 +69,7 @@
         </div>
         <div style="display: flex; gap: 1rem; margin-top: 1rem;">
             <button type="submit" style="background-color: #e94560; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Start Run</button>
+            <button type="button" id="cleanupBtn" style="background-color: #2563eb; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Cleanup Dead Runs</button>
         </div>
         <div id="formError" style="display: none; margin-top: 1rem; padding: 1rem; background-color: #7f1d1d; color: #fca5a5; border-radius: 4px; border: 1px solid #ef4444;"></div>
     </form>
@@ -155,6 +156,27 @@
         } catch (err) {
             formError.textContent = `Network error: ${err.message}`;
             formError.style.display = 'block';
+        }
+    });
+
+    document.getElementById('cleanupBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('cleanupBtn');
+        btn.disabled = true;
+        btn.textContent = 'Cleaning...';
+        try {
+            const response = await fetch('/api/runs/cleanup', { method: 'POST' });
+            if (response.ok) {
+                const data = await response.json();
+                alert(`Cleanup complete! Fixed: ${data.fixed}, Already finished: ${data.already_finished}, Total checked: ${data.total_checked}`);
+                location.reload();
+            } else {
+                alert('Cleanup failed.');
+            }
+        } catch (err) {
+            alert(`Network error: ${err.message}`);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Cleanup Dead Runs';
         }
     });
 </script>
