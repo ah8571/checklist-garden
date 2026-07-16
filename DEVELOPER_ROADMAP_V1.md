@@ -30,6 +30,16 @@
 - [ ] Add notification preferences (email, Slack webhook URL) to user profile in dashboard
 - [ ] Add Slack/Discord webhook as optional alternative to email
 
+## 5. Post-Task Evaluation & Model Routing
+- [ ] Add `agent/evaluator.py` with a post-task review step that runs after the coder marks a task "done"
+- [ ] Evaluator inspects the diff and checks against concrete criteria from the cookbook (e.g., "Did all mentioned templates get updated?", "Are CSS variables used instead of hardcoded colors?")
+- [ ] Evaluator produces a structured verdict: pass / needs-fix (with specific issues) / needs-human-review
+- [ ] If needs-fix: loop back to coder with the evaluator's specific feedback (max 1 retry to control costs)
+- [ ] Support routing evaluation to a different model than the coder — configurable per run: use DeepSeek for coding, Claude/GPT-4 for review
+- [ ] Add model routing to `config.yaml`: `reviewer.model` and `reviewer.provider` fields, falls back to `default_provider` if not set
+- [ ] Store evaluation results per-task in the run record and expose in the web dashboard
+- [ ] Track pass/fail rates per cookbook rule to identify which gates the agent consistently fails
+
 ## 6. Security — Key Management & Least Privilege
 - [ ] Write onboarding disclaimer: each key given to the agent must be the most restricted scope available for that service (Supabase service role, Stripe restricted key, DigitalOcean read/scoped token, etc.)
 - [ ] Document per-service key scoping guide in setup instructions (Supabase, Stripe, SendGrid, DigitalOcean)
@@ -66,6 +76,7 @@
 ## Future / Phase 2
 - [ ] Scheduled runs (cron-based)
 - [ ] Multi-agent parallelism within a single run
+- [ ] Isolated per-repo agent instances — each repo gets its own workspace directory and agent process, no git conflicts between concurrent runs on different repos
 - [ ] Levels of agents: first a completion layer, then a review layer, then perhaps one more review layer by higher level models
 - [ ] Usage metering (tokens per user per run)
 - [ ] Self-hosted install script (one command to deploy on any VPS)
@@ -80,4 +91,4 @@
 - [ ] **Conversational mode** — freeform messages parsed by LLM with repo context; agent decides action (run task, answer question, show logs)
 
 ---
-*Last updated: April 27, 2026*
+*Last updated: July 15, 2026*
