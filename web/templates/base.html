@@ -50,7 +50,7 @@
             inset: 0;
             z-index: -1;
             pointer-events: none;
-            opacity: 0.1;
+            opacity: 0.25;
             background-image:
                 linear-gradient(var(--card-border) 1px, transparent 1px),
                 linear-gradient(90deg, var(--card-border) 1px, transparent 1px);
@@ -278,9 +278,9 @@
                 <span></span><span></span><span></span>
             </button>
             <div class="nav-links" id="navLinks">
+                {% if user_email is defined and user_email %}
                 <a href="/command-center">Runs</a>
                 <a href="/cookbook">Cookbook</a>
-                {% if user_email is defined and user_email %}
                 <a href="/logout">Logout</a>
                 {% endif %}
             </div>
