@@ -1,34 +1,37 @@
-# Reviewer Self-Checklist
-# Internal checklist for the reviewer agent layer.
-# Loaded alongside the coder checklist during review tasks.
+# Reviewer Checklist
+# Loaded by agent/evaluator.py after each coding task.
+# Each section contains concrete checks the reviewer LLM performs against the diff.
+# The evaluator produces pass/needs-fix/needs-human based on these criteria.
 
-plan:
-  - Read the full diff between the agent branch and main
-  - Read the original task description to understand intent
-  - Compare the changes against the task requirements
-  - Identify what the coder may have missed or misinterpreted
+completeness:
+  - Every file listed in context_files was actually modified or created
+  - Every element described in the task description was addressed (not just some)
+  - No placeholder comments like "TODO" or "implement later" left in the code
+  - The commit message accurately describes what was changed
 
-code-review:
-  - Security: check for injection vectors, exposed secrets, unsafe deserialization, path traversal
-  - Correctness: verify logic against stated requirements and edge cases
-  - Style: ensure consistency with existing project conventions visible in the codebase
-  - Testing: confirm new code paths are covered by tests; flag untested branches
-  - Performance: flag N+1 queries, unnecessary allocations, blocking I/O, large diffs
+css-theme:
+  - All hardcoded color values (#hex, rgb, rgba) are replaced with CSS custom properties (var(--...))
+  - Both :root and [data-theme="dark"] variable blocks are updated when colors change
+  - New CSS classes use var(--...) references, not hardcoded colors
+  - Form elements (input, select, textarea, button) have dark mode styling, not just the container
+  - The background grid or pattern uses theme-aware colors, not fixed values
 
-diff-review:
-  - Check that no protected files were modified (agent/*.py, .env, .gitignore)
-  - Verify imports are correct and no unused imports were added
-  - Confirm no debug prints, console.log, or temporary files remain
-  - Check for copy-paste artifacts (e.g., unchanged comments from another file)
-  - Ensure commit messages follow the verb-noun format and reference task IDs
+python-backend:
+  - New routes have proper path traversal protection (check for '..' and '/' in path params)
+  - New endpoints return proper HTTP status codes (not just 200 for everything)
+  - Error responses include meaningful messages, not just "Error"
+  - Imports are at the top of the file, not inline
+  - Function signatures match the existing patterns in the file
 
-verdict:
-  - approve: code is correct, secure, well-tested, and follows conventions
-  - request-changes: issues found that must be fixed before merge
-  - List each critical issue with the file path and line range
-  - List each suggestion with rationale
+html-templates:
+  - All Jinja2 template variables and blocks from the original template are preserved
+  - New templates extend base.html and use {% block content %}
+  - Inline styles use CSS variables (var(--...)) where theme colors are needed
+  - The template handles the case where template variables might be undefined
+  - Navigation links are wrapped in {% if user_email %} checks when they require auth
 
-notes:
-  - Summarize what the coder did well (positive reinforcement helps the agent improve)
-  - If the same class of error appears across multiple tasks, flag it as a systemic issue
-  - If the coder made a reasonable decision that differs from your preference, note it but do not block
+git-workflow:
+  - No .env files, secrets, or credentials are committed
+  - No large binary files or node_modules are staged
+  - The diff doesn't contain unrelated whitespace changes or formatting noise
+  - Files outside the task scope were not modified

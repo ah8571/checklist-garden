@@ -291,3 +291,9 @@ class GitManager:
         except Exception as e:
             logger.error(f"[{self.name}] Failed to create PR: {e}")
         return None
+
+    def get_diff(self, base_branch: str | None = None) -> str:
+        """Get the diff between current branch and base_branch (default: default_branch)."""
+        target = base_branch or self.default_branch
+        result = self._run(["git", "diff", target, "--", "."])
+        return result.stdout.strip()

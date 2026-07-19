@@ -3,6 +3,10 @@ budget:
   max_retries_per_task: 2
   max_tokens_per_task: 100000
 default_provider: deepseek
+reviewer:
+  enabled: true
+  max_rounds: 1
+  provider: deepseek
 logging:
   level: INFO
   log_dir: ./logs

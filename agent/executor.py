@@ -6,8 +6,9 @@ Task Executor ΓÇö runs a single task through the full lifecycle:
 3. Build context (file tree, relevant files)
 4. Send to LLM with instructions
 5. Apply the LLM's code changes
-6. Run tests
-7. Commit and push (or mark failed)
+6. Run tests (with one fix cycle if needed)
+7. Evaluate the diff against reviewer checklist (with one fix cycle if needed)
+8. Commit and push (or mark failed)
 """
 
 import json
@@ -21,6 +22,7 @@ import yaml
 
 from agent.git import GitManager
 from agent.llm import LLMClient, BudgetExceededError
+from agent.evaluator import TaskEvaluator
 
 logger = logging.getLogger("agent.executor")
 
@@ -189,7 +191,52 @@ class TaskExecutor:
                         self._finalize(result, self.branch_name, start_time, commit=True)
                         return result
 
-            # Step 7: Commit and push
+            # Step 7: Evaluate the diff (post-task review)
+            evaluator = TaskEvaluator(self.llm, self.config, self.git)
+            diff = self.git.get_diff()
+            eval_result = evaluator.evaluate(task, diff)
+            result["evaluation"] = eval_result
+
+            if eval_result.get("verdict") == "needs-fix" and not result.get("_eval_retried"):
+                # One fix cycle: send evaluator issues back to coder
+                logger.warning(f"Task {task_id}: Evaluation found issues, attempting fix")
+                fix_issues = "\n".join(
+                    f"- [{i.get('severity','?')}] {i.get('description','?')}"
+                    for i in eval_result.get("issues", [])
+                )
+                fix_prompt = (
+                    f"The reviewer found issues with your changes. Fix them:\n\n"
+                    f"{fix_issues}\n\n"
+                    f"Apply the fixes and respond with the same JSON format as before."
+                )
+                result["_eval_retried"] = True
+                self._current_context = self._build_context(description, context_files)
+                self._current_context += f"\n\n## Reviewer Feedback\n{fix_prompt}"
+                messages = [{"role": "user", "content": self._current_context}]
+                response_text = self.llm.chat(messages, system_prompt=full_system_prompt)
+                changes = self._parse_response(response_text, self._current_context)
+                self._apply_changes(changes)
+
+                # Re-run tests after fix
+                tests_passed2, test_output2 = self.git.run_tests()
+                result["tests_passed"] = tests_passed2
+                result["test_output"] = test_output2
+                if not tests_passed2:
+                    result["status"] = "failed"
+                    result["error"] = "Tests failed after evaluator fix attempt"
+                    self._finalize(result, self.branch_name, start_time, commit=True)
+                    return result
+
+                # Re-evaluate
+                diff2 = self.git.get_diff()
+                eval_result2 = evaluator.evaluate(task, diff2)
+                result["evaluation"] = eval_result2
+
+            if eval_result.get("verdict") == "needs-human":
+                logger.warning(f"Task {task_id}: Flagged for human review")
+                result["notes"] = (result.get("notes") or "") + " | Flagged for human review by evaluator"
+
+            # Step 8: Commit and push
             committed = self.git.stage_and_commit(result["commit_message"])
             if committed:
                 pushed = self.git.push_branch(self.branch_name)
