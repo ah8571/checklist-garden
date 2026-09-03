@@ -86,12 +86,16 @@ def build_prompt(repo_cfg: dict, task: dict) -> str:
     opencode explores the repo itself, so we only give it the task plus the
     list of files it's expected to touch. Avoid dumping whole file contents -
     opencode reads files with its own tools and that keeps context lean.
+
+    Tests are NOT run inside the container (the harness image is bare). The
+    host runs the repo test suite after the container exits; opencode should
+    focus on making correct changes and leave verification to the host.
     """
     lines = [
         f"You are a coding agent working in the repository '{repo_cfg['name']}'.",
         "",
         "Complete the task below. Inspect the relevant code yourself, make the",
-        "changes, and verify your work before finishing.",
+        "changes, and verify your work by reading back the files you edited.",
         "",
         "## Task",
         task["description"].strip(),
@@ -105,19 +109,10 @@ def build_prompt(repo_cfg: dict, task: dict) -> str:
         for f in context_files:
             lines.append(f"- {f}")
 
-    test_cmd = repo_cfg.get("test_command")
-    if test_cmd:
-        lines.append("")
-        lines.append("## Verification")
-        lines.append(
-            f"After making changes, run the test command and iterate until it "
-            f"passes:\n```\n{test_cmd}\n```"
-        )
-
     lines.append("")
     lines.append(
-        "Do NOT commit or push anything, and do NOT create pull requests or "
-        "branches - git is handled for you outside this session."
+        "Do NOT commit, push, create branches, or run git commands. Git and "
+        "test verification are handled for you outside this session."
     )
     return "\n".join(lines)
 
@@ -285,7 +280,22 @@ def run(args) -> int:
             log_dir.mkdir(exist_ok=True)
             (log_dir / f"task_{task_id}.log").write_text(output or "", encoding="utf-8")
 
-            if ok and commit_if_changed(git, f"Task {task_id}: {task['description'][:120]}"):
+            # Host-side verification: run the repo's tests on the changed tree.
+            # Only commit if the container succeeded AND tests pass.
+            tests_passed = True
+            test_output = ""
+            if ok:
+                tests_passed, test_output = git.run_tests()
+                (log_dir / f"task_{task_id}_tests.log").write_text(
+                    test_output or "", encoding="utf-8"
+                )
+                logger.info(f"Task {task_id}: tests {'passed' if tests_passed else 'FAILED'}")
+
+            if (
+                ok
+                and tests_passed
+                and commit_if_changed(git, f"Task {task_id}: {task['description'][:120]}")
+            ):
                 task["status"] = "done"
                 task["branch"] = branch_name[repo_name]
                 task["log_file"] = f"logs/task_{task_id}.log"
@@ -298,7 +308,12 @@ def run(args) -> int:
                 task["status"] = "failed"
                 task["branch"] = branch_name[repo_name]
                 task["log_file"] = f"logs/task_{task_id}.log"
-                reason = "no changes to commit" if ok else "opencode exited nonzero or timed out"
+                if not ok:
+                    reason = "opencode exited nonzero or timed out"
+                elif not tests_passed:
+                    reason = "tests failed on host after edits"
+                else:
+                    reason = "no changes to commit"
                 logger.error(f"Task {task_id}: failed ({elapsed}s) - {reason}")
                 results.append(
                     {"task_id": task_id, "status": "failed", "elapsed_seconds": elapsed,
