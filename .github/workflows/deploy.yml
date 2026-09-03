@@ -23,6 +23,8 @@ jobs:
 
             # 1. Clone or update the app into /opt/checklist-garden
             #    Load .env first so a private repo can be cloned with the PAT.
+            #    Runtime state (runs/, logs/, workspace/, .env) lives alongside
+            #    the repo but is NOT tracked - so never hard-reset the worktree.
             set -a; . /opt/checklist-garden/.env 2>/dev/null || true; set +a
             APP=/opt/checklist-garden
             REPO_URL=https://github.com/planting-moon/checklist-garden.git
@@ -31,13 +33,22 @@ jobs:
             if [ ! -d .git ]; then
               git init -q
               git remote add origin "$REPO_URL"
-            fi
-            if [ -n "$GITHUB_PAT" ]; then
-              git fetch -q "https://x-access-token:${GITHUB_PAT}@github.com/planting-moon/checklist-garden.git" main
+              if [ -n "$GITHUB_PAT" ]; then
+                git fetch -q "https://x-access-token:${GITHUB_PAT}@github.com/planting-moon/checklist-garden.git" main
+              else
+                git fetch -q origin main
+              fi
+              git checkout -q -B main FETCH_HEAD
             else
-              git fetch -q origin main
+              # Fast-forward only - never reset --hard (would delete runtime state).
+              if [ -n "$GITHUB_PAT" ]; then
+                git fetch -q "https://x-access-token:${GITHUB_PAT}@github.com/planting-moon/checklist-garden.git" main
+              else
+                git fetch -q origin main
+              fi
+              git checkout -q main 2>/dev/null || true
+              git merge -q --ff-only origin/main
             fi
-            git checkout -q -B main FETCH_HEAD 2>/dev/null || git reset -q --hard origin/main
             git remote set-url origin "$REPO_URL"
 
             # 2. Python venv + deps (repo-local)

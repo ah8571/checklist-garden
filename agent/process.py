@@ -36,6 +36,7 @@ class RunManager:
                 self.registry = {}
         else:
             self.registry = {}
+            self._save_registry()
     
     def _save_registry(self):
         """Write self.registry to runs/registry.json."""

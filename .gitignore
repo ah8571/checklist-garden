@@ -1,8 +1,12 @@
 .env
+
+# Runtime state (run registry + per-run folders) - never track or deploy-reset
+runs/
 logs/
+workspace/
+
 __pycache__/
 *.pyc
-/workspace/
 .venv/
 
 # Terraform
@@ -10,6 +14,3 @@ infra/terraform/.terraform/
 infra/terraform/*.tfstate
 infra/terraform/*.tfstate.backup
 infra/terraform/*.tfvars
-
-# Runtime state
-runs/registry.json
