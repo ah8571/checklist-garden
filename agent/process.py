@@ -71,13 +71,31 @@ class RunManager:
         
         # Prepare log file
         log_file = run_dir / "output.log"
-        
-        # Spawn subprocess
-        cmd = [
-            sys.executable, "-m", "agent.runner",
-            "--config", config_path,
-            "--checklist", str(dest_checklist)
-        ]
+
+        # Choose the run harness. The opencode container driver (cloud.driver)
+        # is the default; set harness: "legacy" in config.yaml to use the old
+        # agent.runner executor instead.
+        harness = "opencode"
+        try:
+            cfg_path = Path(config_path)
+            if cfg_path.exists():
+                with open(cfg_path, 'r', encoding='utf-8') as f:
+                    harness = yaml.safe_load(f).get("harness", "opencode")
+        except Exception:
+            pass
+
+        if harness == "opencode":
+            cmd = [
+                sys.executable, "-m", "cloud.driver",
+                "--config", config_path,
+                "--checklist", str(dest_checklist)
+            ]
+        else:
+            cmd = [
+                sys.executable, "-m", "agent.runner",
+                "--config", config_path,
+                "--checklist", str(dest_checklist)
+            ]
         try:
             with open(log_file, 'w') as f:
                 proc = subprocess.Popen(
