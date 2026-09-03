@@ -1,9 +1,10 @@
 .env
 
-# Runtime state (run registry + per-run folders) - never track or deploy-reset
+# Runtime state (run registry + per-run folders + user accounts) - never track or deploy-reset
 runs/
 logs/
 workspace/
+web/users.json
 
 __pycache__/
 *.pyc
