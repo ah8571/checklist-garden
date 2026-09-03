@@ -1,8 +1,183 @@
-{% extends "base.html" %}
-{% block title %}Run Log — Checklist Garden{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}Run {{ run_id }} — Checklist Garden{% endblock %}
+
 {% block content %}
-<div class="card">
-    <h2>{{ filename }}</h2>
-    <pre style="background-color: #0f3460; color: #eee; padding: 1rem; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; margin-top: 1rem;">{{ content }}</pre>
+<style>
+    .rd-card {
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--card-border);
+        overflow: hidden;
+    }
+    .rd-body {
+        padding: 1.5rem;
+    }
+    .rd-title {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.5rem;
+        color: var(--text-color);
+        word-break: break-all;
+    }
+    .rd-repo {
+        margin: 0 0 1rem 0;
+        color: var(--footer-text);
+    }
+    .rd-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .rd-meta .label {
+        color: var(--footer-text);
+        font-size: 0.85rem;
+    }
+    .status-pill {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+    .status-running, .status-started, .status-in_progress { background: #fefcbf; color: #975a16; }
+    .status-finished, .status-done { background: #c6f6d5; color: #276749; }
+    .status-failed { background: #fed7d7; color: #c53030; }
+    .status-stopped, .status-pending { background: #e2e8f0; color: #4a5568; }
+    .progress-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .progress-chip {
+        background-color: var(--code-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        min-width: 90px;
+        text-align: center;
+    }
+    .progress-chip .number {
+        display: block;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text-color);
+    }
+    .progress-chip .label {
+        display: block;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--footer-text);
+    }
+    .tasks-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.5rem;
+    }
+    .tasks-table th {
+        text-align: left;
+        padding: 0.75rem 0.5rem;
+        border-bottom: 2px solid var(--card-border);
+        color: var(--text-color);
+    }
+    .tasks-table td {
+        padding: 0.75rem 0.5rem;
+        border-bottom: 1px solid var(--card-border);
+        color: var(--text-color);
+        vertical-align: top;
+    }
+    .tasks-table tr:hover {
+        background-color: var(--code-bg);
+    }
+    .tasks-table a {
+        color: var(--link-color);
+        text-decoration: none;
+    }
+    .tasks-table a:hover {
+        text-decoration: underline;
+    }
+    .empty-state {
+        padding: 2rem;
+        text-align: center;
+        color: var(--footer-text);
+    }
+</style>
+
+<div class="rd-card">
+    <div class="rd-body">
+        <h1 class="rd-title">{{ run_id }}</h1>
+        <p class="rd-repo">Repository: {{ repo }}</p>
+
+        <div class="rd-meta">
+            <span class="status-pill status-{{ status }}">{{ status }}</span>
+            <span><span class="label">Started:</span> {{ started_at or '—' }}</span>
+        </div>
+
+        <div class="progress-row">
+            <div class="progress-chip">
+                <span class="number">{{ task_counts.total }}</span>
+                <span class="label">Total</span>
+            </div>
+            <div class="progress-chip">
+                <span class="number">{{ task_counts.done }}</span>
+                <span class="label">Done</span>
+            </div>
+            <div class="progress-chip">
+                <span class="number">{{ task_counts.failed }}</span>
+                <span class="label">Failed</span>
+            </div>
+            <div class="progress-chip">
+                <span class="number">{{ task_counts.pending }}</span>
+                <span class="label">Pending</span>
+            </div>
+            <div class="progress-chip">
+                <span class="number">{{ task_counts.in_progress }}</span>
+                <span class="label">In Progress</span>
+            </div>
+        </div>
+
+        <h2 style="color: var(--text-color); font-size: 1.2rem; margin: 0 0 0.5rem 0;">Tasks</h2>
+        <table class="tasks-table">
+            <thead>
+                <tr>
+                    <th>Task ID</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Log</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>{{ task.id }}</td>
+                    <td>{{ task.description_display }}</td>
+                    <td><span class="status-pill status-{{ task.status_class }}">{{ task.status }}</span></td>
+                    <td>
+                        {% if task.log_exists %}
+                            <a href="/runs/{{ task.log_filename }}">Log</a>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="empty-state">No tasks recorded for this run yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<p>
+    <a href="/command-center/{{ run_id }}/logs">View raw output log</a>
+    &nbsp;·&nbsp;
+    <a href="/command-center">← Back to Command Center</a>
+</p>
 {% endblock %}

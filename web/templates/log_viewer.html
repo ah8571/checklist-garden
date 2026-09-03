@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Log File — Checklist Garden{% endblock %}
+{% block content %}
+<div class="card">
+    <h2>{{ filename }}</h2>
+    <p><a href="/command-center">← Back to Command Center</a></p>
+    <pre style="background-color: var(--code-bg); color: var(--code-color); padding: 1rem; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; margin-top: 1rem;">{{ content }}</pre>
+</div>
+{% endblock %}
