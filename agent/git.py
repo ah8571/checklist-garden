@@ -85,11 +85,24 @@ class GitManager:
         return True
 
     def pull_latest(self) -> bool:
-        """Pull latest changes on the default branch, handling dirty trees."""
+        """Pull latest changes on the default branch, handling dirty trees.
+
+        If a plain pull fails (e.g. local main has drifted from a force-pushed
+        remote), falls back to fetching and hard-resetting to origin/main. For
+        an autonomous runner the source of truth is always the remote.
+        """
         logger.info(f"[{self.name}] Pulling latest {self.default_branch}")
         self._auto_stash()
         self._run(["git", "checkout", self.default_branch])
         result = self._run(["git", "pull", "origin", self.default_branch])
+        if result.returncode != 0:
+            logger.warning(
+                f"[{self.name}] Pull failed, falling back to fetch + hard reset"
+            )
+            fetch = self._run(["git", "fetch", "origin", self.default_branch])
+            if fetch.returncode == 0:
+                self._run(["git", "reset", "--hard", f"origin/{self.default_branch}"])
+                result = fetch
         self._auto_unstash()
         return result.returncode == 0
 
