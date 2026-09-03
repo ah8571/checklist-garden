@@ -36,7 +36,7 @@ repos:
   name: checklist-garden
   test_command: python -m pytest tests -v
   url: https://github.com/planting-moon/checklist-garden.git
-  workspace_dir: /workspace/checklist-garden
+  workspace_dir: /opt/checklist-garden/workspace/checklist-garden
 timeouts:
   git_operation_seconds: 120
   task_timeout_seconds: 900
