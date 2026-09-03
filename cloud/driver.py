@@ -178,7 +178,9 @@ def commit_if_changed(git: GitManager, message: str) -> bool:
 
 
 def run(args) -> int:
-    load_dotenv(ROOT / ".env")
+    # override=True: the .env on disk is authoritative, even if a stale copy of
+    # the variable was exported into the parent shell earlier (e.g. an old PAT).
+    load_dotenv(ROOT / ".env", override=True)
     setup_logging()
 
     config = load_config(args.config)

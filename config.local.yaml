@@ -17,7 +17,7 @@ models:
     temperature: 0.2
   deepseek:
     max_tokens: 8192
-    model: deepseek-chat
+    model: deepseek-v4-pro
     temperature: 0.2
   openai:
     max_tokens: 4096
