@@ -193,28 +193,39 @@
 <div class="cc-card">
     <div class="cc-body">
         <h2>Runs</h2>
-        <table class="runs-table">
+        <table class="runs-table" id="runsTable">
             <thead>
                 <tr>
                     <th>Run ID</th>
                     <th>Repo</th>
                     <th>Status</th>
+                    <th>Tasks</th>
                     <th>Started At</th>
                     <th style="width: 40px;"></th>
                 </tr>
             </thead>
             <tbody>
                 {% for run in active_runs %}
-                <tr>
+                <tr data-run-id="{{ run.run_id }}">
                     <td><a href="/command-center/{{ run.run_id }}/logs">{{ run.run_id }}</a></td>
                     <td>{{ run.repo }}</td>
-                    <td><span class="status-pill status-{{ run.status }}">{{ run.status }}</span></td>
-                    <td class="started-at">{{ run.started_at }}</td>
-                    <td><button class="delete-run-btn" data-run-id="{{ run.run_id }}" title="Delete run">✕</button></td>
+                    <td><span class="status-pill status-{{ run.status }}" data-status>{{ run.status }}</span></td>
+                    <td data-tasks>
+                        {% if run.tasks and run.tasks.total %}
+                            {{ run.tasks.done + run.tasks.failed }}/{{ run.tasks.total }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="started-at" data-started="{{ run.started_at }}">{{ run.started_at }}</td>
+                    <td style="white-space: nowrap;">
+                        <a href="/command-center/{{ run.run_id }}/logs" title="View logs">Logs</a>
+                        <button class="delete-run-btn" data-run-id="{{ run.run_id }}" title="Delete run">✕</button>
+                    </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="no-runs">No runs yet</td>
+                    <td colspan="6" class="no-runs">No runs yet</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -325,8 +336,8 @@
 
             if (response.ok) {
                 const data = await response.json();
-                alert(`Run started with ID: ${data.run_id}`);
-                location.reload();
+                // Jump straight to the new run's live log page.
+                window.location.href = `/command-center/${encodeURIComponent(data.run_id)}/logs`;
             } else {
                 try {
                     const errorData = await response.json();
@@ -360,11 +371,62 @@
         return `${days}d ago`;
     }
 
-    document.querySelectorAll('.started-at').forEach(cell => {
-        const iso = cell.textContent.trim();
-        cell.title = iso;
-        cell.textContent = relativeTime(iso);
-    });
+    function refreshRelativeTimes() {
+        document.querySelectorAll('[data-started]').forEach(cell => {
+            const iso = cell.dataset.started;
+            cell.title = iso;
+            cell.textContent = relativeTime(iso);
+        });
+    }
+
+    function renderTasksCell(cell, tasks) {
+        if (!tasks || !tasks.total) {
+            cell.textContent = '—';
+            return;
+        }
+        const done = (tasks.done || 0) + (tasks.failed || 0);
+        cell.textContent = `${done}/${tasks.total}`;
+    }
+
+    async function pollRuns() {
+        try {
+            const response = await fetch('/api/runs', { cache: 'no-store' });
+            if (!response.ok) return;
+            const runs = await response.json();
+            const rows = document.querySelectorAll('#runsTable tbody tr[data-run-id]');
+            let anyRunning = false;
+            rows.forEach(row => {
+                const runId = row.dataset.runId;
+                const live = runs.find(r => r.run_id === runId);
+                if (!live) return;
+                const statusEl = row.querySelector('[data-status]');
+                const tasksEl = row.querySelector('[data-tasks]');
+                if (statusEl) {
+                    statusEl.textContent = live.status;
+                    statusEl.className = `status-pill status-${live.status}`;
+                }
+                if (tasksEl) renderTasksCell(tasksEl, live.tasks);
+                if (live.status === 'running' || live.status === 'started') anyRunning = true;
+            });
+            refreshRelativeTimes();
+            return anyRunning;
+        } catch (err) {
+            console.error('Poll error:', err);
+            return false;
+        }
+    }
+
+    refreshRelativeTimes();
+
+    // While any run is still active, refresh status + task progress every 4s.
+    // Stop polling once everything has finished.
+    async function pollLoop() {
+        const anyRunning = await pollRuns();
+        if (anyRunning) {
+            setTimeout(pollLoop, 4000);
+        }
+    }
+    pollLoop();
 
     // Delete run handler
     document.querySelectorAll('.delete-run-btn').forEach(btn => {

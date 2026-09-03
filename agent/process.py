@@ -139,6 +139,7 @@ class RunManager:
         pid = entry["pid"]
         
         # Check if process is alive
+        alive = False
         try:
             os.kill(pid, 0)
             alive = True
@@ -147,6 +148,10 @@ class RunManager:
         except PermissionError:
             # Process exists but we don't have permission to signal it
             alive = True
+        except OSError:
+            # Invalid PID or platform quirk (e.g. stale PID from another OS):
+            # treat the run as no longer alive rather than crashing the call.
+            alive = False
         
         # Update status if process is dead and was running
         if not alive and entry["status"] == "running":
