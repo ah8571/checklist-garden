@@ -7,7 +7,7 @@ from pathlib import Path
 import os
 import tempfile
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
 from collections import deque
 import glob
@@ -785,6 +785,97 @@ async def delete_run(
     })
 
 
+def _parse_timestamp(value):
+    """Parse a registry timestamp (ISO-8601 or compact) into a naive UTC datetime."""
+    if not value:
+        return None
+    text = str(value)
+    try:
+        dt = datetime.fromisoformat(text)
+    except (ValueError, TypeError):
+        for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y%m%d_%H%M%S", "%Y%m%d-%H%M%S"):
+            try:
+                dt = datetime.strptime(text, fmt)
+                break
+            except ValueError:
+                continue
+        else:
+            return None
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
+
+
+def _report_file_timestamp(filename):
+    """Extract the generation timestamp from a report filename.
+
+    Report files are named ``run_report_<YYYYmmdd_HHMMSS>.md`` (see
+    ``agent/report.py``). Returns a naive datetime or None if unparseable.
+    """
+    stem = Path(filename).stem
+    prefix = "run_report_"
+    if not stem.startswith(prefix):
+        return None
+    try:
+        return datetime.strptime(stem[len(prefix):], "%Y%m%d_%H%M%S")
+    except ValueError:
+        return None
+
+
+def _find_report_for_run(status):
+    """Locate the report file generated for a given run.
+
+    Reports live in the shared logs directory and are named with the time
+    they were generated (the end of the run), so we match a report to a run
+    by checking whether its timestamp falls within the run's lifetime.
+    """
+    started = _parse_timestamp(status.get("started_at"))
+    finished = _parse_timestamp(status.get("finished_at"))
+
+    if not AGENT_LOG_DIR.exists():
+        return None
+
+    reports = []
+    for path in AGENT_LOG_DIR.glob("run_report_*.md"):
+        if not path.is_file():
+            continue
+        ts = _report_file_timestamp(path.name)
+        if ts is not None:
+            reports.append((ts, path))
+
+    if not reports:
+        return None
+
+    reports.sort(key=lambda item: item[0])
+
+    # A single report can only belong to this run.
+    if len(reports) == 1:
+        return reports[0][1]
+
+    if started is None:
+        return reports[-1][1]
+
+    lower = started - timedelta(seconds=5)
+    upper = finished + timedelta(seconds=5) if finished is not None else None
+
+    in_window = [
+        (ts, path) for ts, path in reports
+        if ts >= lower and (upper is None or ts <= upper)
+    ]
+
+    if not in_window:
+        nearest = min(
+            reports,
+            key=lambda item: abs((item[0] - started).total_seconds()),
+        )
+        return nearest[1]
+
+    # A run's report is written when it finishes, so pick the latest report
+    # inside the run's lifetime when the finish time is known; otherwise the
+    # first report generated after the run started.
+    return in_window[-1][1] if finished is not None else in_window[0][1]
+
+
 @app.get("/api/runs/{run_id}/report")
 async def get_run_report(
     run_id: str,
@@ -794,46 +885,26 @@ async def get_run_report(
     # Validate run_id to prevent path traversal
     if '..' in run_id or '/' in run_id or '\\' in run_id:
         raise HTTPException(status_code=400, detail="Invalid run ID")
-    
-    # Read registry.json to find the run's started_at timestamp
-    registry_path = Path("runs/registry.json")
-    if not registry_path.exists():
-        raise HTTPException(status_code=404, detail="Registry not found")
-    
+
+    # Use the RunManager registry helpers rather than re-parsing the file.
+    manager = RunManager()
     try:
-        with open(registry_path, 'r') as f:
-            registry = json.load(f)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Failed to read registry")
-    
-    # Find the run entry by run_id
-    run_entry = None
-    for entry in registry:
-        if entry.get("run_id") == run_id:
-            run_entry = entry
-            break
-    
-    if run_entry is None:
-        raise HTTPException(status_code=404, detail="Run not found in registry")
-    
-    started_at = run_entry.get("started_at")
-    if not started_at:
+        status = manager.get_status(run_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Run not found")
+
+    if not status.get("started_at"):
         raise HTTPException(status_code=404, detail="Run has no started_at timestamp")
-    
-    # Construct the report filename pattern
-    # started_at format example: "20260715_002207"
-    report_pattern = f"run_report_{started_at}.md"
-    report_path = AGENT_LOG_DIR / report_pattern
-    
-    if not report_path.exists() or not report_path.is_file():
+
+    report_path = _find_report_for_run(status)
+    if report_path is None:
         raise HTTPException(status_code=404, detail="Report file not found")
-    
+
     try:
-        with open(report_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+        content = report_path.read_text(encoding="utf-8")
     except Exception:
         raise HTTPException(status_code=500, detail="Failed to read report file")
-    
+
     return Response(content=content, media_type="text/plain")
 
 
