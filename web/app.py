@@ -222,7 +222,7 @@ async def run_detail(
     
     return templates.TemplateResponse(
         request,
-        "run_detail.html",
+        "log_viewer.html",
         {
             "user_email": user_email,
             "filename": filename,
@@ -336,6 +336,81 @@ async def command_center_help(
         "import_help.html",
         {
             "user_email": user_email
+        }
+    )
+
+
+def _task_status_class(task_status: str) -> str:
+    """Map a checklist task status to a CSS status-pill class."""
+    task_status = (task_status or "pending").lower()
+    if task_status in ("done", "completed"):
+        return "done"
+    if task_status == "failed":
+        return "failed"
+    if task_status == "in_progress":
+        return "in_progress"
+    return "pending"
+
+
+@app.get("/command-center/{run_id}", response_class=HTMLResponse)
+async def run_detail_page(
+    request: Request,
+    run_id: str,
+    user_email: str = Depends(get_current_user)
+):
+    """Structured run detail page with a per-task breakdown."""
+    if '..' in run_id or '/' in run_id or '\\' in run_id:
+        raise HTTPException(status_code=400, detail="Invalid run ID")
+
+    manager = RunManager()
+    try:
+        run_status = manager.get_status(run_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Run not found")
+
+    tasks = []
+    checklist_file = run_status.get("checklist_file") or (Path("runs") / run_id / "checklist.yaml")
+    checklist_path = Path(checklist_file)
+    if checklist_path.exists() and checklist_path.is_file():
+        try:
+            with open(checklist_path, 'r', encoding='utf-8') as f:
+                checklist = yaml.safe_load(f)
+            raw_tasks = (checklist or {}).get("tasks", []) or []
+            for task in raw_tasks:
+                if not isinstance(task, dict):
+                    continue
+                task_id = task.get("id", "")
+                description = str(task.get("description") or "")
+                if len(description) > 80:
+                    description_display = description[:80] + "..."
+                else:
+                    description_display = description
+                task_status = str(task.get("status", "pending")).lower()
+                log_filename = f"task_{task_id}.log"
+                log_path = AGENT_LOG_DIR / log_filename
+                log_exists = log_path.exists() and log_path.is_file()
+                tasks.append({
+                    "id": task_id,
+                    "description_display": description_display,
+                    "status": task_status,
+                    "status_class": _task_status_class(task_status),
+                    "log_filename": log_filename,
+                    "log_exists": log_exists,
+                })
+        except (yaml.YAMLError, IOError):
+            tasks = []
+
+    return templates.TemplateResponse(
+        request,
+        "run_detail.html",
+        {
+            "user_email": user_email,
+            "run_id": run_id,
+            "repo": run_status.get("repo", ""),
+            "status": run_status.get("status", "unknown"),
+            "started_at": run_status.get("started_at", ""),
+            "task_counts": run_status.get("tasks", {}),
+            "tasks": tasks,
         }
     )
 
