@@ -59,8 +59,9 @@ jobs:
             # 3. Build the opencode harness image the cloud driver uses
             docker build -q -t cg-opencode cloud/
 
-            # 4. Install Caddyfile from the repo (single source of truth)
-            sed "s/{\$CADDY_DOMAIN}/${{ vars.CADDY_DOMAIN }}/g" Caddyfile > /etc/caddy/Caddyfile
+            # 4. Install Caddyfile from the repo (single source of truth).
+            #    Domains are hardcoded in the Caddyfile - no sed substitution.
+            cp Caddyfile /etc/caddy/Caddyfile
             caddy reload --config /etc/caddy/Caddyfile || systemctl restart caddy
 
             # 5. Install + restart the web/agent service

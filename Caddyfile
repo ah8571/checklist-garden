@@ -1,18 +1,15 @@
 # Caddyfile for Checklist Garden
 #
-# The domain is injected from an environment variable so the same file works on
-# a dev box and the droplet. Start caddy with:
-#   CADDY_DOMAIN=checklist.garden caddy run
-# or reference it in systemd / docker with the env var exported.
+# Domains are hardcoded here (single production domain). The deploy workflow
+# copies this file verbatim to /etc/caddy/Caddyfile and reloads caddy.
 
-{$CADDY_DOMAIN} {
+checklist.garden, www.checklist.garden {
     encode gzip
 
     request_body {
         max_size 20MB
     }
 
-    # Reasonable timeouts for long-lived agent run requests
     reverse_proxy 127.0.0.1:8000 {
         transport http {
             read_timeout 3600s
