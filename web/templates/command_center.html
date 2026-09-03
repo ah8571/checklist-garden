@@ -209,7 +209,7 @@
                     <td><a href="/command-center/{{ run.run_id }}/logs">{{ run.run_id }}</a></td>
                     <td>{{ run.repo }}</td>
                     <td><span class="status-pill status-{{ run.status }}">{{ run.status }}</span></td>
-                    <td>{{ run.started_at }}</td>
+                    <td class="started-at">{{ run.started_at }}</td>
                     <td><button class="delete-run-btn" data-run-id="{{ run.run_id }}" title="Delete run">✕</button></td>
                 </tr>
                 {% else %}
@@ -344,6 +344,26 @@
             startBtn.disabled = false;
             startBtn.textContent = 'Start Run';
         }
+    });
+
+    function relativeTime(iso) {
+        const date = new Date(iso);
+        if (isNaN(date.getTime())) return iso;
+        const diffMs = Date.now() - date.getTime();
+        if (diffMs < 0) return 'just now';
+        const minutes = Math.floor(diffMs / 60000);
+        if (minutes < 1) return 'just now';
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h ago`;
+        const days = Math.floor(hours / 24);
+        return `${days}d ago`;
+    }
+
+    document.querySelectorAll('.started-at').forEach(cell => {
+        const iso = cell.textContent.trim();
+        cell.title = iso;
+        cell.textContent = relativeTime(iso);
     });
 
     // Delete run handler
