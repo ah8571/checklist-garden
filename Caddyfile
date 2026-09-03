@@ -8,15 +8,12 @@
 {$CADDY_DOMAIN} {
     encode gzip
 
-    reverse_proxy 127.0.0.1:8000
-
-    # Optional: increase upload body for large checklist uploads
     request_body {
         max_size 20MB
     }
 
     # Reasonable timeouts for long-lived agent run requests
-    reverse_proxy / {
+    reverse_proxy 127.0.0.1:8000 {
         transport http {
             read_timeout 3600s
             write_timeout 3600s
