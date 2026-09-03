@@ -1,18 +1,23 @@
 [Unit]
-Description=Checklist Garden
-After=network.target
+Description=Checklist Garden (web + agent runner)
+After=network.target docker.service
+Wants=docker.service
 
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/workspace/checklist-garden
-EnvironmentFile=/workspace/checklist-garden/.env
-ExecStart=/root/agent/.venv/bin/uvicorn web.app:app --host 127.0.0.1 --port 8000
+WorkingDirectory=/opt/checklist-garden
+EnvironmentFile=-/opt/checklist-garden/.env
+# Note: on the old droplet this was /root/agent/.venv - the deploy workflow
+# now installs into the repo-local venv below.
+ExecStart=/opt/checklist-garden/.venv/bin/uvicorn web.app:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=5
 KillMode=mixed
 KillSignal=SIGTERM
-TimeoutStopSec=5
+TimeoutStopSec=10
+# Give spawned agent runs + docker a working home/tmp
+Environment=HOME=/root
 
 [Install]
 WantedBy=multi-user.target

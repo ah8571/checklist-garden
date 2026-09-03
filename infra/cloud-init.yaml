@@ -1,0 +1,54 @@
+#cloud-config
+#
+# Bootstrap for the Checklist Garden droplet.
+# Installs everything the app + the Docker/opencode harness need. Code itself
+# is cloned/pulled by the GitHub Actions deploy workflow (so no secrets live in
+# user-data), and secrets live in /opt/checklist-garden/.env on the box only.
+#
+# Apply via terraform's user_data, or manually:
+#   sudo cloud-init run? no - re-provision only on first boot.
+#
+# Resulting layout:
+#   /opt/checklist-garden        repo clone (deploy workflow pulls here)
+#   /opt/checklist-garden/.env   secrets (created by operator / CI, NOT in git)
+#   /opt/checklist-garden/.venv  python virtualenv (created by deploy workflow)
+#   /opt/checklist-garden/workspace   agent target-repo clones
+#   /opt/checklist-garden/logs   run logs + reports
+#   /opt/checklist-garden/runs   run registry + checklists
+
+package_update: true
+package_upgrade: false
+
+packages:
+  - git
+  - curl
+  - ca-certificates
+  - python3
+  - python3-venv
+  - python3-pip
+  - docker.io
+  - docker-compose-v2
+  - jq
+
+# NOTE: .env.example is NOT created here - the repo ships its own. Creating it
+# would collide with the tracked file on first checkout. Secrets go in .env,
+# which the operator creates by hand (gitignored).
+
+runcmd:
+  - mkdir -p /opt/checklist-garden/workspace
+  - mkdir -p /opt/checklist-garden/logs
+  - mkdir -p /opt/checklist-garden/runs
+
+  # Caddy from the official repo (newer than Ubuntu's, easier TLS).
+  - curl -fsSL https://dl.cloudsmith.io/public/caddy/stable/gpg.key | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+  - curl -fsSL https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt | tee /etc/apt/sources.list.d/caddy-stable.list > /dev/null
+  - apt-get update -y
+  - apt-get install -y caddy
+
+  # Let the deploy user (root) run docker for the opencode harness.
+  - systemctl enable --now docker
+
+  # Ensure permissions sane on the app dir.
+  - chown -R root:root /opt/checklist-garden
+
+final_message: "Checklist Garden droplet provisioned. Clone/pull the repo, create .env, start the service."

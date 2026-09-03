@@ -1,6 +1,25 @@
-checklist-garden.example.com {
-    reverse_proxy localhost:8000
-}
-checklist-garden.example.com {
-    reverse_proxy localhost:8000
+# Caddyfile for Checklist Garden
+#
+# The domain is injected from an environment variable so the same file works on
+# a dev box and the droplet. Start caddy with:
+#   CADDY_DOMAIN=checklist.garden caddy run
+# or reference it in systemd / docker with the env var exported.
+
+{$CADDY_DOMAIN} {
+    encode gzip
+
+    reverse_proxy 127.0.0.1:8000
+
+    # Optional: increase upload body for large checklist uploads
+    request_body {
+        max_size 20MB
+    }
+
+    # Reasonable timeouts for long-lived agent run requests
+    reverse_proxy / {
+        transport http {
+            read_timeout 3600s
+            write_timeout 3600s
+        }
+    }
 }

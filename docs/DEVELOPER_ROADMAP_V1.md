@@ -1,5 +1,9 @@
 # Developer Roadmap v1
 
+## UI
+[ ] A chat agent that one can work on putting together one's checklist rather than having to paste raw markdown, it create the checklist and then obtains approval before sending
+[ ] Leanring from M. Pocock's system for better structure: https://www.developersdigest.tech/blog/github-trending-skills-2026-05-13
+
 ## 1. GitHub App Integration (manual + code)
 - [ ] Register a GitHub App at github.com/settings/apps
 - [ ] Set callback URL to `http://your-domain/auth/github/callback`

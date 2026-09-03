@@ -1,0 +1,30 @@
+# Example checklist for the opencode cloud driver
+#
+# Tasks below are small and self-contained so you can sanity-check the
+# container → edit → commit loop quickly against this repo.
+# Use: python cloud/driver.py --config config.local.yaml --checklist cloud/example.checklist.yaml
+
+tasks:
+  - id: 1
+    repo: checklist-garden
+    description: >
+      In the command center dashboard (web/templates/command_center.html),
+      the runs table's "Started At" column shows raw ISO timestamps. Add a
+      small JS function that renders these as relative times ("just now",
+      "5m ago", "2h ago", "3d ago") and keep the full ISO value in the cell's
+      title attribute for hover. If the parse fails, show the original string.
+    status: pending
+    context_files:
+      - web/templates/command_center.html
+      - web/app.py
+
+  - id: 2
+    repo: checklist-garden
+    description: >
+      The footer in web/templates/base.html shows the literal string
+      "Red-Eye Agent" and a year. Update it to read "Checklist Garden" so the
+      branding is consistent across the app. Keep it simple: change only the
+      footer text and nothing else.
+    status: pending
+    context_files:
+      - web/templates/base.html

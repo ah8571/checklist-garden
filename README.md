@@ -27,7 +27,7 @@ checklist.yaml  →  clone repo  →  send task to LLM  →  apply code changes 
 
 ```bash
 # 1. Clone
-git clone https://github.com/ah8571/checklist-garden.git
+git clone https://github.com/planting-moon/checklist-garden.git
 cd checklist-garden
 
 # 2. Configure
@@ -72,11 +72,35 @@ Structured task templates and self-review checklists that guide the coding agent
 ## Deployment
 
 ### Prerequisites
-- Python 3.10+
-- Caddy (for HTTPS)
-- Domain pointed to your server
+- Python 3.10+ (locally) or the provisioning setup below (server)
+- DigitalOcean account + API token
+- Domain pointed at your server (or create an A record via Terraform)
+- Docker (server only — used as the agent execution harness)
 
-### Steps
+### Automated droplet setup
+
+The droplet is now provisioned reproducibly from `infra/` (Terraform +
+cloud-init) instead of by hand:
+
+```bash
+export DIGITALOCEAN_TOKEN=...
+cd infra/terraform
+terraform init
+terraform apply -var domain=checklist.garden
+```
+
+Then, once:
+1. `ssh root@<droplet-ip>`, copy `.env.example` → `/opt/checklist-garden/.env`
+   and fill in `DEEPSEEK_API_KEY`, `GITHUB_PAT`, `WEB_SECRET_KEY`,
+   `ALLOWED_EMAILS`.
+2. Configure GitHub Actions vars/secrets (`DROPLET_HOST`, `DROPLET_USER`,
+   `CADDY_DOMAIN`, `DROPLET_SSH_KEY`).
+3. Push to `main` — the deploy workflow pulls code, installs deps, builds the
+   opencode harness image, installs Caddy, and restarts the service.
+
+See `infra/README.md` for full details and teardown.
+
+### Manual (legacy, no droplet)
 
 ```bash
 # Install systemd service
@@ -85,9 +109,8 @@ sudo systemctl daemon-reload
 sudo systemctl enable checklist-garden
 sudo systemctl start checklist-garden
 
-# Configure Caddy
-sudo cp Caddyfile /etc/caddy/Caddyfile
-sudo systemctl reload caddy
+# Configure Caddy (CADDY_DOMAIN env var must be set)
+CADDY_DOMAIN=your.domain sudo -E caddy reload --config Caddyfile
 
 # Verify
 sudo systemctl status checklist-garden
@@ -112,6 +135,14 @@ web/
 cookbook/
   templates/    — structured task templates for different work types
   coder-checklist.yaml — self-review criteria for coding agents
+
+cloud/
+  driver.py     — prototype: runs each task via an opencode container (harness)
+  Dockerfile    — thin wrapper over the opencode image used by cloud/driver.py
+
+infra/
+  terraform/    — DigitalOcean droplet provisioning (droplet + firewall + DNS)
+  cloud-init.yaml — first-boot bootstrap (docker, python, caddy, dirs)
 ```
 
 ## Roadmap

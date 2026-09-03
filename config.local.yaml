@@ -35,7 +35,7 @@ repos:
   install_command: python -m pip install -r requirements.txt
   name: checklist-garden
   test_command: python -m pytest tests -v
-  url: https://github.com/ah8571/checklist-garden.git
+  url: https://github.com/planting-moon/checklist-garden.git
   workspace_dir: ./workspace/checklist-garden
 timeouts:
   git_operation_seconds: 120
